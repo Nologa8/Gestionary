@@ -1,0 +1,15 @@
+{
+  "name": "CAPITAL",
+  "description": "Coach patrimonial IA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0d12",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/f59e0b/000000?text=C",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
