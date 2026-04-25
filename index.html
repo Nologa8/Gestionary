@@ -1550,14 +1550,14 @@ function goPageMob(id,el){document.querySelectorAll(".mob-tab").forEach(b=>b.cla
 // ═══════════════════════════════════════════════════════
 const PAGE_TITLES={overview:"Vue d'ensemble",positions:"Positions",rebalancing:"Rebalancing",whatif:"Simulateur What-if",patrimoine:"Patrimoine global",crypto:"Crypto-monnaies",autres:"Autres actifs",analyse:"Analyse géo & sectorielle",risque:"Risque",historique:"Historique",dividendes:"Dividendes",journal:"Journal",progression:"Rangs & Défis",education:"Éducation financière",conseiller:"Conseiller IA",settings:"Paramètres"};
 let currentPage="overview";
-function goPage(id,el){
+async function goPage(id,el){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.querySelectorAll(".nav-tab").forEach(b=>b.classList.remove("active"));
   const pg=document.getElementById("page-"+id);
   if(pg)pg.classList.add("active");
   if(el)el.classList.add("active");
   currentPage=id;
-  renderPage(id);
+  await renderPage(id);
 }
 async function renderCurrentPage(){await renderPage(currentPage);}
 async function renderPage(id){
@@ -1884,13 +1884,49 @@ async function clearJournal(){if(!confirm("Effacer le journal ?"))return;const a
 // PATRIMOINE
 // ═══════════════════════════════════════════════════════
 async function renderPatri(){
-  // Toujours recharger les données fraîches depuis Firestore
-  await loadPositions();
+  // Tenter de recharger les données, mais continuer même si ça échoue
+  try { await loadPositions(); } catch(e){ console.warn("renderPatri loadPositions:", e); }
+
   const pnv=document.getElementById("patri-net-val");
   const pns=document.getElementById("patri-net-sub");
   const pca=document.getElementById("patri-cats");
   const ptb=document.getElementById("patri-table");
-  if(!pnv||!ptb)return;
+  if(!pnv){console.warn("patri-net-val not found");return;}
+  if(!ptb){console.warn("patri-table not found");return;}
+
+  try {
+    const t=totPatri();
+    pnv.textContent=fmt(t.total)+" €";
+    const actifBrut=t.bourse+t.crypto+t.actifs;
+    if(pns)pns.textContent=`Actifs bruts : ${fmt(actifBrut)} € — Dettes : −${fmt(t.dettes)} €`;
+    const bycat={bourse:t.bourse,crypto:cryptoPos.reduce((s,p)=>s+p.current_value,0)};
+    patriItems.forEach(p=>{bycat[p.categorie]=(bycat[p.categorie]||0)+(p.valeur||0);});
+    if(pca)pca.innerHTML=Object.entries(bycat).filter(([,v])=>v>0).map(([cat,val])=>{
+      const cfg=PATRI_CATS[cat]||{icon:"📦",label:cat};
+      const pct=actifBrut>0?(val/actifBrut*100).toFixed(1):0;
+      return `<div class="patri-cat"><div class="patri-cat-icon">${cfg.icon}</div><div class="patri-cat-name">${cfg.label}</div><div class="patri-cat-val">${fmt(val)} €</div><div class="patri-cat-sub">${pct}%</div></div>`;
+    }).join("");
+    try{
+      const donutData=Object.entries(bycat).filter(([,v])=>v>0).map(([cat,val])=>{const cfg=PATRI_CATS[cat];return{n:cfg?.label||(cat==="bourse"?"Bourse":cat==="crypto"?"Crypto":cat),p:actifBrut>0?val/actifBrut*100:0,c:cfg?.color||(cat==="bourse"?"#f59e0b":cat==="crypto"?"#f97316":"#94a3b8")};});
+      renderGenDonut("patri-donut","patri-legend",donutData);
+    }catch(e){console.warn("donut:",e);}
+    const pad=document.getElementById("patri-ad");
+    if(pad)pad.innerHTML=`<div style="margin-bottom:10px"><div class="bar-row"><span class="bar-lbl" style="color:var(--gn)">Actifs bruts</span><span class="bar-pct" style="color:var(--gn)">${fmt(actifBrut)} €</span></div><div class="bar-track" style="height:7px"><div class="bar-fill" style="width:100%;background:var(--gn)"></div></div></div><div style="margin-bottom:12px"><div class="bar-row"><span class="bar-lbl" style="color:var(--rd)">Dettes</span><span class="bar-pct" style="color:var(--rd)">−${fmt(t.dettes)} €</span></div><div class="bar-track" style="height:7px"><div class="bar-fill" style="width:${actifBrut>0?Math.min(t.dettes/actifBrut*100,100):0}%;background:var(--rd)"></div></div></div><div style="padding-top:10px;border-top:1px solid var(--b);display:flex;justify-content:space-between;font-size:11px"><span>Patrimoine net</span><span style="font-family:var(--M);font-weight:700;color:var(--am)">${fmt(t.total)} €</span></div>`;
+    const allItems=[
+      {categorie:"bourse",nom:"Portefeuille boursier",valeur:t.bourse,dette:0,rendement_annuel:0,notes:`${positions.length} positions`},
+      {categorie:"crypto",nom:"Portefeuille crypto",valeur:cryptoPos.reduce((s,p)=>s+p.current_value,0),dette:0,rendement_annuel:0,notes:`${cryptoPos.length} coins`},
+      ...patriItems
+    ];
+    ptb.innerHTML=allItems.map(p=>{
+      const cfg=PATRI_CATS[p.categorie]||{icon:p.categorie==="bourse"?"📈":"📦",label:p.categorie};
+      const net=(p.valeur||0)-(p.dette||0);
+      return `<tr><td><span>${cfg.icon}</span> <span class="badge b-neu" style="font-size:9px">${cfg.label}</span></td><td style="font-weight:600">${p.nom}</td><td style="font-family:var(--M);font-weight:600;color:var(--am)">${fmt(p.valeur||0)} €</td><td style="font-family:var(--M);color:${p.dette>0?"var(--rd)":"var(--t3)"}">${p.dette>0?"−"+fmt(p.dette)+" €":"—"}</td><td style="font-family:var(--M);font-weight:600;color:${net>=0?"var(--gn)":"var(--rd)"}">${fmt(net)} €</td><td style="font-size:10px;color:var(--t3)">${p.rendement_annuel>0?"+"+fmt(p.rendement_annuel)+" €/an":"—"}</td><td>${p.id?`<button class="btn btn-outline btn-sm" style="color:var(--rd);border-color:rgba(248,113,113,0.3);padding:2px 7px" onclick="delPatri('${p.id}')">✕</button>`:""}</td></tr>`;
+    }).join("");
+  }catch(e){
+    console.error("renderPatri error:",e);
+    if(pnv)pnv.textContent="Erreur: "+e.message;
+  }
+}
   const t=totPatri();
   pnv.textContent=fmt(t.total)+" €";
   const actifBrut=t.bourse+t.crypto+t.actifs;
