@@ -1569,7 +1569,7 @@ async function renderPage(id){
   else if(id==="historique")await loadHist(365);
   else if(id==="dividendes")if(typeof loadDivs==="function")await loadDivs();
   else if(id==="journal")await loadJournal();
-  else if(id==="patrimoine"){renderPatri();}
+  else if(id==="patrimoine"){await renderPatri();}
   else if(id==="autres"){renderAutres();}
   else if(id==="crypto")renderCrypto();
   else if(id==="autres")renderAutres();
@@ -1883,7 +1883,9 @@ async function clearJournal(){if(!confirm("Effacer le journal ?"))return;const a
 // ═══════════════════════════════════════════════════════
 // PATRIMOINE
 // ═══════════════════════════════════════════════════════
-function renderPatri(){
+async function renderPatri(){
+  // Toujours recharger les données fraîches depuis Firestore
+  await loadPositions();
   const pnv=document.getElementById("patri-net-val");
   const pns=document.getElementById("patri-net-sub");
   const pca=document.getElementById("patri-cats");
@@ -1914,8 +1916,7 @@ function renderPatri(){
 async function delPatri(id){
   if(!confirm("Supprimer cet actif ?"))return;
   await dbDel("patrimoine",String(id));
-  await loadPositions();
-  renderPatri();
+  await renderPatri();
   renderAutres();
   showToast("Supprimé ✓");
 }
@@ -1931,7 +1932,7 @@ async function addPatri(){
   if(!item.nom||!item.valeur){showToast("Remplis le nom et la valeur","error");return;}
   await dbPut("patrimoine",item);addJournalEntry("PATRIMOINE",`${item.categorie} : ${item.nom} — ${fmt(item.valeur)} €`);
   document.getElementById("patri-overlay").classList.remove("open");
-  await loadPositions();renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");
+  await loadPositions();await renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");
 }
 async function delPatri(id){if(!confirm("Supprimer ?"))return;await dbDel("patrimoine",id);await loadPositions();renderPatri();}
 function renderAutres(){
