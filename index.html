@@ -290,6 +290,10 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .lesson-title{font-family:var(--D);font-size:12px;font-weight:700;margin-bottom:3px;}
 .lesson-desc{font-size:10px;color:var(--t3);line-height:1.5;}
 
+.ai-prov-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;background:var(--s2);border:1px solid var(--b);border-radius:8px;color:var(--t2);font-family:var(--D);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.ai-prov-btn.active{background:var(--pu3);border-color:var(--pu);color:var(--tx);}
+.ai-prov-btn:hover:not(.active){border-color:var(--b2);color:var(--tx);}
+
 /* ─── CHAT ──────────────────────────────────────────── */
 .ai-cfg{background:var(--s1);border:1px solid var(--b);border-radius:10px;padding:14px;margin-bottom:12px;}
 .api-row{display:flex;gap:8px;align-items:center;}
@@ -781,12 +785,29 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
   <div class="sh"><div><div class="sh-title">✦ Conseiller IA</div><div class="sh-sub">Analyse ton patrimoine en temps réel</div></div></div>
   <div style="max-width:720px">
     <div class="ai-cfg">
-      <div style="font-family:var(--D);font-size:12px;font-weight:700;margin-bottom:10px">Clé API Anthropic</div>
-      <div class="api-row">
-        <input type="password" id="api-key-input" placeholder="sk-ant-… (console.anthropic.com)" oninput="saveApiKey(this.value)">
-        <button class="btn btn-outline btn-sm" onclick="testApi()">Tester</button>
+      <div style="font-family:var(--D);font-size:12px;font-weight:700;margin-bottom:12px">Configuration IA</div>
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="ai-prov-btn active" id="prov-gemini" onclick="setProvider('gemini')">
+          <span>🆓</span> Gemini <span style="font-size:9px;color:var(--gn);font-family:var(--M)">Gratuit</span>
+        </button>
+        <button class="ai-prov-btn" id="prov-anthropic" onclick="setProvider('anthropic')">
+          <span>✦</span> Anthropic <span style="font-size:9px;color:var(--am);font-family:var(--M)">Payant</span>
+        </button>
       </div>
-      <div style="font-family:var(--M);font-size:9px;color:var(--t3);margin-top:5px">Stockée localement · jamais partagée</div>
+      <div id="prov-gemini-cfg">
+        <div class="api-row">
+          <input type="password" id="gemini-key-input" placeholder="AIza… (aistudio.google.com → Get API key)" oninput="saveGeminiKey(this.value)">
+          <button class="btn btn-outline btn-sm" onclick="testAI()">Tester</button>
+        </div>
+        <div style="font-family:var(--M);font-size:9px;color:var(--gn);margin-top:5px">✓ Gratuit · 1 500 req/jour · Gemini 2.0 Flash</div>
+      </div>
+      <div id="prov-anthropic-cfg" style="display:none">
+        <div class="api-row">
+          <input type="password" id="api-key-input" placeholder="sk-ant-… (console.anthropic.com)" oninput="saveApiKey(this.value)">
+          <button class="btn btn-outline btn-sm" onclick="testAI()">Tester</button>
+        </div>
+        <div style="font-family:var(--M);font-size:9px;color:var(--t3);margin-top:5px">Clé stockée localement · jamais partagée</div>
+      </div>
     </div>
     <div class="chat-box">
       <div class="chat-sugs" id="chat-sugs">
@@ -797,7 +818,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
         <button class="sug" onclick="sendSug(this)">PEA ou CTO ?</button>
       </div>
       <div class="chat-msgs" id="chat-msgs">
-        <div class="msg ai"><div class="msg-av">✦</div><div class="bubble">Bonjour ! Je connais ton portfolio en temps réel. Configure ta clé API ci-dessus pour commencer.</div></div>
+        <div class="msg ai"><div class="msg-av">✦</div><div class="bubble">Bonjour ! Je connais ton portfolio en temps réel. Configure ta clé API ci-dessus pour commencer. Gemini est gratuit sur aistudio.google.com !</div></div>
       </div>
       <div class="chat-bar">
         <textarea class="chat-inp" id="chat-input" placeholder="Pose une question…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"></textarea>
@@ -1322,7 +1343,11 @@ async function initApp(){
   const tgt=await getSetting("targets_"+currentPF);
   if(tgt)try{targets=JSON.parse(tgt);}catch{}
   const apiKey=await getSetting("anthropic_key");
-  if(apiKey)document.getElementById("api-key-input").value=apiKey;
+  if(apiKey){const el=document.getElementById("api-key-input");if(el)el.value=apiKey;}
+  const geminiKey=await getSetting("gemini_key");
+  if(geminiKey){const el=document.getElementById("gemini-key-input");if(el)el.value=geminiKey;}
+  const savedProvider=await getSetting("ai_provider")||"gemini";
+  setProvider(savedProvider);
   await loadXP();
   await loadPositions();
   await takeDailySnapshot();
@@ -1898,36 +1923,85 @@ function closeLesson(){document.getElementById("lesson-overlay").classList.remov
 // ═══════════════════════════════════════════════════════
 // AI CHAT
 // ═══════════════════════════════════════════════════════
-async function saveApiKey(val){if(val.length>10)await setSetting("anthropic_key",val);}
-async function testApi(){const key=document.getElementById("api-key-input").value;if(!key){showToast("Entre ta clé API","error");return;}const r=await callAI([{role:"user",content:"Dis juste OK."}],key);if(r.error)showToast("Erreur : "+r.error,"error");else showToast("✓ Connexion API réussie");}
-async function sendChat(){const input=document.getElementById("chat-input");const msg=input.value.trim();if(!msg)return;input.value="";appendMsg("user",msg);chatHistory.push({role:"user",content:msg});document.getElementById("chat-sugs").style.display="none";await runAI();}
-function sendSug(btn){document.getElementById("chat-input").value=btn.textContent;sendChat();}
+// ═══════════════════════════════════════════════════════
+// AI CHAT — Gemini (gratuit) + Anthropic
+// ═══════════════════════════════════════════════════════
+let aiProvider='gemini';
+function setProvider(p){
+  aiProvider=p;
+  document.getElementById('prov-gemini').classList.toggle('active',p==='gemini');
+  document.getElementById('prov-anthropic').classList.toggle('active',p==='anthropic');
+  document.getElementById('prov-gemini-cfg').style.display=p==='gemini'?'block':'none';
+  document.getElementById('prov-anthropic-cfg').style.display=p==='anthropic'?'block':'none';
+  setSetting('ai_provider',p);
+}
+async function saveGeminiKey(val){if(val.length>10)await setSetting('gemini_key',val);}
+async function saveApiKey(val){if(val.length>10)await setSetting('anthropic_key',val);}
+async function testAI(){
+  const r=await callAI([{role:'user',content:'Dis juste OK.'}]);
+  if(r.error)showToast('Erreur : '+r.error,'error');
+  else showToast('✓ Connexion IA réussie');
+}
+async function sendChat(){
+  const input=document.getElementById('chat-input');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';appendMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+  document.getElementById('chat-sugs').style.display='none';
+  await runAI();
+}
+function sendSug(btn){document.getElementById('chat-input').value=btn.textContent;sendChat();}
 async function runAI(){
-  const key=document.getElementById("api-key-input").value;
-  if(!key){appendMsg("ai","⚠ Configure ta clé API Anthropic pour utiliser le conseiller IA.");return;}
   const tid=appendTyping();
   const tot=totV(),inv=totI(),gain=tot-inv,perf=inv>0?gain/inv*100:0;
   const t=totPatri();
-  const zones=getZones().slice(0,5).map(z=>`${z.n}: ${z.p.toFixed(1)}%`).join(", ");
-  const sects=consolidate(getSect).slice(0,5).map(s=>`${s.n}: ${s.p.toFixed(1)}%`).join(", ");
-  const posStr=positions.map(p=>{const g=p.current_value-p.invested,pf=p.invested>0?g/p.invested*100:0;return `${p.ticker}(${fmt(p.current_value)}€,perf:${pf>=0?"+":""}${pf.toFixed(1)}%)`;}).join(" | ");
-  const sys=`Tu es un conseiller en gestion de patrimoine français expert. Patrimoine de l'utilisateur: Bourse: ${fmt(tot)}€ (investi: ${fmt(inv)}€, perf: ${perf>=0?"+":""}${perf.toFixed(1)}%). Patrimoine net total: ${fmt(t.total)}€ (dont crypto: ${fmt(t.crypto)}€, autres: ${fmt(t.actifs)}€, dettes: ${fmt(t.dettes)}€). Positions: ${posStr||"aucune"}. Géo: ${zones||"—"}. Secteurs: ${sects||"—"}. Vol. est.: ${(portVol()*100).toFixed(1)}%/an. Réponds en français, sois direct et précis avec les chiffres. Max 3 paragraphes.`;
-  const messages=chatHistory.length===1?[{role:"user",content:sys+"\n\nQuestion: "+chatHistory[0].content}]:[...chatHistory.slice(-8)];
-  const r=await callAI(messages,key);
+  const zones=getZones().slice(0,5).map(z=>`${z.n}: ${z.p.toFixed(1)}%`).join(', ');
+  const sects=consolidate(getSect).slice(0,5).map(s=>`${s.n}: ${s.p.toFixed(1)}%`).join(', ');
+  const posStr=positions.map(p=>{const g=p.current_value-p.invested,pf=p.invested>0?g/p.invested*100:0;return `${p.ticker}(${fmt(p.current_value)}€,${pf>=0?'+':''}${pf.toFixed(1)}%)`;}).join(' | ');
+  const sys=`Tu es un conseiller en gestion de patrimoine français expert. Patrimoine: Bourse: ${fmt(tot)}€ (investi: ${fmt(inv)}€, perf: ${perf>=0?'+':''}${perf.toFixed(1)}%). Net total: ${fmt(t.total)}€ (crypto: ${fmt(t.crypto)}€, autres: ${fmt(t.actifs)}€, dettes: ${fmt(t.dettes)}€). Positions: ${posStr||'aucune'}. Géo: ${zones||'—'}. Secteurs: ${sects||'—'}. Réponds en français, sois direct et précis. Max 3 paragraphes.`;
+  const messages=chatHistory.length===1?[{role:'user',content:sys+'\n\nQuestion: '+chatHistory[0].content}]:[...chatHistory.slice(-8)];
+  const r=await callAI(messages);
   removeTyping(tid);
-  if(r.error){appendMsg("ai","⚠ Erreur : "+r.error);return;}
-  chatHistory.push({role:"assistant",content:r.text});appendMsg("ai",r.text);
+  if(r.error){appendMsg('ai','⚠ '+r.error);return;}
+  chatHistory.push({role:'assistant',content:r.text});
+  appendMsg('ai',r.text);
 }
-async function callAI(messages,apiKey){
+async function callAI(messages){
   try{
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:"claude-sonnet-4-5-20251001",max_tokens:1500,messages})});
-    const data=await res.json();
-    if(data.error)return{error:data.error.message};
-    return{text:data.content[0].text};
+    if(aiProvider==='gemini'){
+      const key=document.getElementById('gemini-key-input')?.value;
+      if(!key)return{error:'Configure ta clé Gemini (aistudio.google.com → Get API key)'};
+      const geminiMsgs=messages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]}));
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:geminiMsgs,generationConfig:{maxOutputTokens:1500}})
+      });
+      const data=await res.json();
+      if(data.error)return{error:data.error.message};
+      return{text:data.candidates?.[0]?.content?.parts?.[0]?.text||'Pas de réponse'};
+    } else {
+      const key=document.getElementById('api-key-input')?.value;
+      if(!key)return{error:'Configure ta clé Anthropic (console.anthropic.com)'};
+      const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-5-20251001',max_tokens:1500,messages})});
+      const data=await res.json();
+      if(data.error)return{error:data.error.message};
+      return{text:data.content[0].text};
+    }
   }catch(e){return{error:e.message};}
 }
-function appendMsg(role,text){const msgs=document.getElementById("chat-msgs");const div=document.createElement("div");div.className="msg "+role;div.innerHTML=`<div class="msg-av">${role==="ai"?"✦":"👤"}</div><div class="msg-bubble">${text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
-function appendTyping(){const msgs=document.getElementById("chat-msgs");const id="ty-"+Date.now();const div=document.createElement("div");div.id=id;div.className="msg ai";div.innerHTML=`<div class="msg-av">✦</div><div class="msg-bubble"><div class="typing-anim"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return id;}
+function appendMsg(role,text){
+  const msgs=document.getElementById('chat-msgs');
+  const div=document.createElement('div');div.className='msg '+role;
+  div.innerHTML=`<div class="msg-av">${role==='ai'?'✦':'👤'}</div><div class="bubble">${text.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+function appendTyping(){
+  const msgs=document.getElementById('chat-msgs');const id='ty-'+Date.now();
+  const div=document.createElement('div');div.id=id;div.className='msg ai';
+  div.innerHTML=`<div class="msg-av">✦</div><div class="bubble"><div class="typing-anim"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div></div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return id;
+}
 function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
 
 // ═══════════════════════════════════════════════════════
