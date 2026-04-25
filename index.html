@@ -2228,10 +2228,10 @@ function doSearch(q){
           <div class="r-m">${d.s||"—"}</div>
         </div>
         <span class="r-badge" style="${tc}">${d.tp}</span>
-        <span class="r-price" id="rp-${d.t}">—</span>
+        <span class="r-price" id="rp-${d.yf||d.t}">—</span>
       </div>`;
     }).join("");
-    fetchSearchPrices(all.map(d=>d.t));
+    fetchSearchPrices(all.map(d=>d.yf||d.t));
   };
 
   renderRes(res);
@@ -2291,7 +2291,16 @@ async function fetchPrices(tickers) {
 }
 
 async function refreshPrices() {
-  const tickers = positions.map(p => p.ticker).filter(Boolean);
+  const tickers = positions.map(p => {
+    const a = getA(p.ticker);
+    return a?.yf || p.ticker;
+  }).filter(Boolean);
+  const tickerMap = {}; // yf → original ticker
+  positions.forEach(p => {
+    const a = getA(p.ticker);
+    const yf = a?.yf || p.ticker;
+    tickerMap[yf] = p.ticker;
+  });
   if(!tickers.length) {
     const ps = document.getElementById("price-status");
     if(ps) ps.textContent = "Aucune position";
@@ -2317,8 +2326,9 @@ async function refreshPrices() {
       const chg = p.change >= 0 ? `+${p.change}%` : `${p.change}%`;
       const clr = p.change >= 0 ? "var(--gn)" : "var(--rd)";
       const cur = p.currency === "EUR" ? "€" : p.currency === "USD" ? "$" : p.currency;
+      const displayTicker = tickerMap[t] || t;
       return `<span style="font-family:var(--M);font-size:9px;color:var(--t2);white-space:nowrap">
-        <strong style="color:var(--am)">${t}</strong>
+        <strong style="color:var(--am)">${displayTicker}</strong>
         ${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur}
         <span style="color:${clr}">${chg}</span>
       </span>`;
