@@ -1483,6 +1483,7 @@ async function initApp(){
   await loadPositions();
   await takeDailySnapshot();
   await renderOverview();
+  renderPatri();
   updateClock();
   setInterval(updateClock,1000);
   // Auto-refresh prices every 60s
@@ -1575,7 +1576,10 @@ async function renderPage(id){
   else if(id==="historique")await loadHist(365);
   else if(id==="dividendes")if(typeof loadDivs==="function")await loadDivs();
   else if(id==="journal")await loadJournal();
-  else if(id==="patrimoine"){await renderPatri();}
+  else if(id==="patrimoine"){
+    renderPatri(); // render immédiat avec données en mémoire
+    loadPositions().then(()=>renderPatri()); // refresh silencieux
+  }
   else if(id==="autres"){renderAutres();}
   else if(id==="crypto")renderCrypto();
   else if(id==="autres")renderAutres();
@@ -1890,15 +1894,11 @@ async function clearJournal(){if(!confirm("Effacer le journal ?"))return;const a
 // PATRIMOINE
 // ═══════════════════════════════════════════════════════
 async function renderPatri(){
-  // Tenter de recharger les données, mais continuer même si ça échoue
-  try { await loadPositions(); } catch(e){ console.warn("renderPatri loadPositions:", e); }
-
   const pnv=document.getElementById("patri-net-val");
   const pns=document.getElementById("patri-net-sub");
   const pca=document.getElementById("patri-cats");
   const ptb=document.getElementById("patri-table");
-  if(!pnv){console.warn("patri-net-val not found");return;}
-  if(!ptb){console.warn("patri-table not found");return;}
+  if(!pnv||!ptb)return;
 
   try {
     const t=totPatri();
