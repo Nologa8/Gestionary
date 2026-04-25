@@ -1461,7 +1461,7 @@ async function init(){
 async function initApp(){
   portfolios=await dbAll("portfolios");
   if(!portfolios.length){await dbPut("portfolios",{id:1,name:"Mon Portfolio",currency:"EUR"});portfolios=await dbAll("portfolios");}
-  currentPF=portfolios[0].id;
+  currentPF=String(portfolios[0].id);
   renderPFSelect();
   const obj=await getSetting("obj_"+currentPF);
   if(obj)document.getElementById("obj-input").value=obj;
@@ -1505,11 +1505,11 @@ async function createPF(){
 }
 async function loadPositions(){
   const all=await dbAll("positions");
-  positions=all.filter(p=>p.portfolio_id===currentPF).sort((a,b)=>b.current_value-a.current_value);
+  positions=all.filter(p=>String(p.portfolio_id)===String(currentPF)).sort((a,b)=>b.current_value-a.current_value);
   const allPatri=await dbAll("patrimoine");
-  patriItems=allPatri.filter(p=>p.portfolio_id===currentPF);
+  patriItems=allPatri.filter(p=>String(p.portfolio_id)===String(currentPF));
   const allCrypto=await dbAll("crypto");
-  cryptoPos=allCrypto.filter(c=>c.portfolio_id===currentPF);
+  cryptoPos=allCrypto.filter(c=>String(c.portfolio_id)===String(currentPF));
   updateSidebar();
   const bp=document.getElementById("badge-pos");if(bp)bp.textContent=positions.length;
   const bc=document.getElementById("badge-crypto");if(bc)bc.textContent=cryptoPos.length;
@@ -1519,7 +1519,7 @@ async function takeDailySnapshot(){
   const all=await dbAll("snapshots");
   const exists=all.find(s=>s.portfolio_id===currentPF&&s.date===today);
   if(!exists&&totV()>0){
-    await dbPut("snapshots",{portfolio_id:currentPF,date:today,total_value:totV(),total_invested:totI()});
+    await dbPut("snapshots",{portfolio_id:String(currentPF),date:today,total_value:totV(),total_invested:totI()});
   }
 }
 
@@ -1850,7 +1850,7 @@ async function loadDivs(){
 }
 function openDivModal(){document.getElementById("dv-date").value=new Date().toISOString().split("T")[0];document.getElementById("div-overlay").classList.add("open");}
 async function addDividend(){
-  const d={portfolio_id:currentPF,ticker:document.getElementById("dv-ticker").value.toUpperCase(),amount:parseFloat(document.getElementById("dv-amount").value)||0,date:document.getElementById("dv-date").value,notes:document.getElementById("dv-notes").value};
+  const d={portfolio_id:String(currentPF),ticker:document.getElementById("dv-ticker").value.toUpperCase(),amount:parseFloat(document.getElementById("dv-amount").value)||0,date:document.getElementById("dv-date").value,notes:document.getElementById("dv-notes").value};
   if(!d.ticker||!d.amount)return;
   await dbPut("dividends",d);addJournalEntry("DIVIDENDE",`${d.ticker} — +${fmt(d.amount)} €`);
   document.getElementById("div-overlay").classList.remove("open");
@@ -1864,7 +1864,7 @@ async function delDiv(id){await dbDel("dividends",id);if(typeof loadDivs==="func
 // ═══════════════════════════════════════════════════════
 async function addJournalEntry(action,details){
   const all=await dbAll("journal");
-  const entry={portfolio_id:currentPF,action,details,date:new Date().toLocaleString("fr-FR")};
+  const entry={portfolio_id:String(currentPF),action,details,date:new Date().toLocaleString("fr-FR")};
   await dbPut("journal",entry);
   const badge=document.getElementById("badge-journal");
   badge.textContent=parseInt(badge.textContent||"0")+1;
@@ -1928,7 +1928,7 @@ function renderGenDonut(svgId,legId,data){
 }
 function openPatriModal(cat){if(cat)document.getElementById("pa-cat").value=cat;document.getElementById("patri-overlay").classList.add("open");}
 async function addPatri(){
-  const item={portfolio_id:currentPF,categorie:document.getElementById("pa-cat").value,nom:document.getElementById("pa-nom").value,valeur:parseFloat(document.getElementById("pa-val").value)||0,dette:parseFloat(document.getElementById("pa-dette").value)||0,rendement_annuel:parseFloat(document.getElementById("pa-rdt").value)||0,notes:document.getElementById("pa-notes").value};
+  const item={portfolio_id:String(currentPF),categorie:document.getElementById("pa-cat").value,nom:document.getElementById("pa-nom").value,valeur:parseFloat(document.getElementById("pa-val").value)||0,dette:parseFloat(document.getElementById("pa-dette").value)||0,rendement_annuel:parseFloat(document.getElementById("pa-rdt").value)||0,notes:document.getElementById("pa-notes").value};
   if(!item.nom||!item.valeur){showToast("Remplis le nom et la valeur","error");return;}
   await dbPut("patrimoine",item);addJournalEntry("PATRIMOINE",`${item.categorie} : ${item.nom} — ${fmt(item.valeur)} €`);
   document.getElementById("patri-overlay").classList.remove("open");
@@ -1953,7 +1953,7 @@ async function addCrypto(){
   let val=parseFloat(document.getElementById("cr-val").value)||0;
   const inv=parseFloat(document.getElementById("cr-inv").value)||(qty*avg);
   if(!val&&qty&&avg)val=qty*avg;
-  const pos={portfolio_id:currentPF,coin_id:crSelCoin.id,symbol:crSelCoin.sym,name:crSelCoin.name,quantity:qty,avg_buy_price:avg,current_value:val,invested:inv,wallet:document.getElementById("cr-wallet").value};
+  const pos={portfolio_id:String(currentPF),coin_id:crSelCoin.id,symbol:crSelCoin.sym,name:crSelCoin.name,quantity:qty,avg_buy_price:avg,current_value:val,invested:inv,wallet:document.getElementById("cr-wallet").value};
   await dbPut("crypto",pos);addJournalEntry("CRYPTO",`${crSelCoin.sym} — ${fmt(val)} €`);
   document.getElementById("crypto-overlay").classList.remove("open");
   await loadPositions();renderCrypto();showToast("✓ "+crSelCoin.sym+" ajouté");addXP(40,"Première crypto ajoutée !");
@@ -2379,7 +2379,7 @@ function cancelSel(){selAsset=null;document.getElementById("add-form").style.dis
 async function confirmAdd(){
   if(!selAsset)return;
   const all=await dbAll("positions");
-  const pos={portfolio_id:currentPF,ticker:selAsset.t,name:selAsset.n,current_value:parseFloat(document.getElementById("f-val").value)||0,invested:parseFloat(document.getElementById("f-inv").value)||0,shares:parseFloat(document.getElementById("f-shares").value)||0,avg_price:parseFloat(document.getElementById("f-avg").value)||0,date_added:new Date().toISOString().split("T")[0]};
+  const pos={portfolio_id:String(currentPF),ticker:selAsset.t,name:selAsset.n,current_value:parseFloat(document.getElementById("f-val").value)||0,invested:parseFloat(document.getElementById("f-inv").value)||0,shares:parseFloat(document.getElementById("f-shares").value)||0,avg_price:parseFloat(document.getElementById("f-avg").value)||0,date_added:new Date().toISOString().split("T")[0]};
   await dbPut("positions",pos);
   addJournalEntry("ACHAT",`${selAsset.t} — ${fmt(pos.current_value)} € (investi: ${fmt(pos.invested)} €)`);
   await loadPositions();closeSearch();
