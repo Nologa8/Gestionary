@@ -365,13 +365,15 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .chip{font-family:var(--M);font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--b);color:var(--t3);cursor:pointer;}
 .chip:hover{border-color:var(--pu);color:var(--pu2);}
 .chip.on{background:var(--pu3);border-color:rgba(124,58,237,0.35);color:var(--pu2);}
-.res-list{display:flex;flex-direction:column;gap:3px;max-height:240px;overflow-y:auto;}
-.res{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;background:var(--s2);cursor:pointer;border:1px solid transparent;}
-.res:hover{border-color:var(--b);background:var(--s3);}
-.r-t{font-family:var(--M);font-size:10px;font-weight:700;color:var(--pu2);width:52px;flex-shrink:0;}
+.res-list{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto;}
+.res{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;background:var(--s2);cursor:pointer;border:1px solid var(--b);transition:all 0.12s;}
+.res:hover{border-color:rgba(124,58,237,0.4);background:var(--s3);transform:translateX(2px);}
+.r-t{font-family:var(--M);font-size:11px;font-weight:700;color:var(--pu2);width:56px;flex-shrink:0;letter-spacing:0.5px;}
 .r-i{flex:1;min-width:0;}
-.r-n{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.r-n{font-size:11px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx);}
 .r-m{font-family:var(--M);font-size:9px;color:var(--t3);margin-top:1px;}
+.r-price{font-family:var(--M);font-size:11px;font-weight:600;color:var(--gn);margin-left:auto;flex-shrink:0;min-width:60px;text-align:right;}
+.r-badge{font-family:var(--M);font-size:9px;padding:2px 6px;border-radius:4px;background:var(--s3);color:var(--t2);border:1px solid var(--b);flex-shrink:0;}
 .add-form{margin-top:12px;padding-top:12px;border-top:1px solid var(--b);}
 .sel-card{background:var(--pu3);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px;margin-bottom:12px;}
 .sel-t{font-family:var(--M);font-size:10px;color:var(--pu2);font-weight:700;margin-bottom:2px;}
@@ -2042,10 +2044,47 @@ function doSearch(q){
     const mQ=!q2||d.t.toLowerCase().includes(q2)||d.n.toLowerCase().includes(q2)||d.c.toLowerCase().includes(q2)||d.s.toLowerCase().includes(q2)||d.cf.includes(q2);
     let mF=true;if(curFilter==="ETF")mF=d.tp==="ETF"||d.tp==="ETC";else if(["US","EU","ASIA"].includes(curFilter))mF=d.r===curFilter;else if(FMAP[curFilter])mF=FMAP[curFilter].includes(d.sc);
     return mQ&&mF;
-  }).slice(0,40);
+  }).slice(0,30);
   const el=document.getElementById("s-results");
-  if(!res.length){el.innerHTML=`<div class="empty-res">Aucun résultat pour "${q}"</div>`;return;}
-  el.innerHTML=res.map(d=>`<div class="result" onclick="selA('${d.t}')"><span class="r-ticker">${d.t}</span><div class="r-info"><div class="r-name">${d.cf} ${d.n}</div><div class="r-meta">${d.s} · Vol. ${(d.vol*100).toFixed(0)}%${d.div?" · Div. "+d.div+"%":""}</div></div><span class="badge b-amber">${d.tp}</span></div>`).join("");
+  if(!res.length){el.innerHTML=`<div class="no-data">Aucun résultat pour "${q}"</div>`;return;}
+  const TYPE_COLOR={ETF:"color:var(--am)",ETC:"color:var(--am)",Action:"color:var(--bl)",Crypto:"color:var(--pu2)"};
+  el.innerHTML=res.map(d=>{
+    const geo=d.r==="US"?"🇺🇸":d.r==="EU"?"🇪🇺":d.r==="ASIA"?"🌏":"🌍";
+    const tc=TYPE_COLOR[d.tp]||"color:var(--t2)";
+    return `<div class="res" onclick="selA('${d.t}')">
+      <span class="r-t">${d.t}</span>
+      <div class="r-i">
+        <div class="r-n">${d.n}</div>
+        <div class="r-m">${geo} ${d.s}</div>
+      </div>
+      <span class="r-badge" style="${tc}">${d.tp}</span>
+      <span class="r-price" id="rp-${d.t}">—</span>
+    </div>`;
+  }).join("");
+  // Fetch prices async
+  fetchSearchPrices(res.map(d=>d.t));
+}
+
+async function fetchSearchPrices(tickers){
+  // Try Yahoo Finance via a public CORS proxy
+  const proxy="https://corsproxy.io/?";
+  for(const t of tickers.slice(0,10)){
+    const el=document.getElementById("rp-"+t);
+    if(!el)continue;
+    try{
+      const yf=t.includes(".")?t:t;
+      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${yf}?interval=1d&range=1d`;
+      const r=await fetch(proxy+encodeURIComponent(url),{signal:AbortSignal.timeout(3000)});
+      if(!r.ok)continue;
+      const data=await r.json();
+      const price=data?.chart?.result?.[0]?.meta?.regularMarketPrice;
+      const currency=data?.chart?.result?.[0]?.meta?.currency||"";
+      if(price&&el){
+        el.textContent=price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+(currency==="USD"?"$":currency==="EUR"?"€":currency);
+        el.style.color="var(--gn)";
+      }
+    }catch{}
+  }
 }
 function selA(t){
   selAsset=DB.find(d=>d.t===t);if(!selAsset)return;
