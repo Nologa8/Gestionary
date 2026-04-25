@@ -2065,25 +2065,70 @@ function doSearch(q){
   fetchSearchPrices(res.map(d=>d.t));
 }
 
-async function fetchSearchPrices(tickers){
-  // Try Yahoo Finance via a public CORS proxy
-  const proxy="https://corsproxy.io/?";
-  for(const t of tickers.slice(0,10)){
-    const el=document.getElementById("rp-"+t);
-    if(!el)continue;
-    try{
-      const yf=t.includes(".")?t:t;
-      const url=`https://query1.finance.yahoo.com/v8/finance/chart/${yf}?interval=1d&range=1d`;
-      const r=await fetch(proxy+encodeURIComponent(url),{signal:AbortSignal.timeout(3000)});
-      if(!r.ok)continue;
-      const data=await r.json();
-      const price=data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-      const currency=data?.chart?.result?.[0]?.meta?.currency||"";
-      if(price&&el){
-        el.textContent=price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" "+(currency==="USD"?"$":currency==="EUR"?"€":currency);
-        el.style.color="var(--gn)";
-      }
-    }catch{}
+// ═══════════════════════════════════════════════════════
+// PRIX TEMPS RÉEL — Cloudflare Worker
+// ═══════════════════════════════════════════════════════
+const WORKER_URL = "https://gestionary-prices.noo-longoni.workers.dev";
+let priceCache = {};
+
+async function fetchPrices(tickers) {
+  if(!tickers.length) return {};
+  try {
+    const r = await fetch(`${WORKER_URL}?tickers=${tickers.join(',')}`);
+    if(!r.ok) return {};
+    const data = await r.json();
+    Object.assign(priceCache, data);
+    return data;
+  } catch { return {}; }
+}
+
+async function refreshPrices() {
+  const tickers = positions.map(p => p.ticker).filter(Boolean);
+  if(!tickers.length) {
+    const ps = document.getElementById("price-status");
+    if(ps) ps.textContent = "Aucune position";
+    return;
+  }
+  const pdot = document.getElementById("pdot");
+  const ps = document.getElementById("price-status");
+  if(pdot) pdot.className = "pdot";
+  if(ps) ps.textContent = "Mise à jour…";
+
+  const prices = await fetchPrices(tickers);
+  const keys = Object.keys(prices);
+  if(!keys.length) {
+    if(ps) ps.textContent = "Erreur fetch";
+    return;
+  }
+
+  // Update price bar ticks
+  const ticks = document.getElementById("price-ticks");
+  if(ticks) {
+    ticks.innerHTML = keys.slice(0,12).map(t => {
+      const p = prices[t];
+      const chg = p.change >= 0 ? `+${p.change}%` : `${p.change}%`;
+      const clr = p.change >= 0 ? "var(--gn)" : "var(--rd)";
+      const cur = p.currency === "EUR" ? "€" : p.currency === "USD" ? "$" : p.currency;
+      return `<span style="font-family:var(--M);font-size:9px;color:var(--t2);white-space:nowrap">
+        <strong style="color:var(--am)">${t}</strong>
+        ${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur}
+        <span style="color:${clr}">${chg}</span>
+      </span>`;
+    }).join('<span style="color:var(--t3);margin:0 8px">·</span>');
+  }
+
+  if(pdot) pdot.className = "pdot live";
+  if(ps) ps.textContent = "Live · " + new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+
+async function fetchSearchPrices(tickers) {
+  const prices = await fetchPrices(tickers.slice(0, 15));
+  for(const [t, p] of Object.entries(prices)) {
+    const el = document.getElementById("rp-" + t);
+    if(!el) continue;
+    const cur = p.currency === "EUR" ? "€" : p.currency === "USD" ? "$" : p.currency;
+    const chg = p.change >= 0 ? `+${p.change}%` : `${p.change}%`;
+    el.innerHTML = `${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur} <span style="font-size:9px;color:${p.change>=0?"var(--gn)":"var(--rd)"}">${chg}</span>`;
   }
 }
 function selA(t){
