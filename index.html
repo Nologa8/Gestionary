@@ -1151,7 +1151,563 @@ const DB=[
 {t:"SE",n:"Sea Limited",yf:"SE",tp:"Action",c:"SG",cf:"🇸🇬",r:"ASIA",s:"IT / Gaming & E-commerce Asie SE",sc:"IT",vol:0.52,div:0,P:[{n:"🇸🇬 SG",p:100}],S:[{n:"IT",p:100}]},
 ];
 
-const ACWI_P=[{n:"🇺🇸 US",p:61.63},{n:"🇯🇵 JP",p:5.39},{n:"🇬🇧 UK",p:3.45},{n:"🇨🇳 CN",p:3.09},{n:"🇨🇦 CA",p:2.98},{n:"🇫🇷 FR",p:2.20},{n:"🇹🇼 TW",p:2.10},{n:"🇩🇪 DE",p:2.00},{n:"🇮🇳 IN",p:1.80},{n:"🇰🇷 KR",p:1.60},{n:"🌐 Autres",p:13.76}];
+// ─── EXTENDED DB (~800 actifs supplémentaires) ──────────────────────────────
+(function(){
+const SC={IT:"IT",FIN:"Finance",HEALTH:"Santé",CONS:"Conso. discr.",CSTAPLE:"Conso. base",IND:"Industrie",ENERGY:"Énergie",MAT:"Matériaux",COMM:"Communication",REIT:"Immobilier",ETF:"ETF",CMDTY:"Matières premières",UTIL:"Utilities"};
+const C2={"🇺🇸":"US","🇫🇷":"FR","🇩🇪":"DE","🇬🇧":"GB","🇨🇭":"CH","🇳🇱":"NL","🇪🇸":"ES","🇮🇹":"IT","🇸🇪":"SE","🇯🇵":"JP","🇨🇳":"CN","🇰🇷":"KR","🇹🇼":"TW","🇦🇺":"AU","🇮🇳":"IN","🇸🇬":"SG","🇧🇷":"BR","🇨🇦":"CA","🇩🇰":"DK","🇫🇮":"FI","🇧🇪":"BE","🇳🇴":"NO","🇮🇪":"IE","🇭🇰":"HK","🇲🇽":"MX","🌍":"--"};
+const R2={"🇺🇸":"US","🇨🇦":"US","🇧🇷":"US","🇲🇽":"US","🇫🇷":"EU","🇩🇪":"EU","🇬🇧":"EU","🇨🇭":"EU","🇳🇱":"EU","🇪🇸":"EU","🇮🇹":"EU","🇸🇪":"EU","🇩🇰":"EU","🇫🇮":"EU","🇧🇪":"EU","🇳🇴":"EU","🇮🇪":"EU","🇯🇵":"ASIA","🇨🇳":"ASIA","🇰🇷":"ASIA","🇹🇼":"ASIA","🇦🇺":"ASIA","🇮🇳":"ASIA","🇸🇬":"ASIA","🇭🇰":"ASIA","🌍":"US"};
+// [ticker, nom, type, drapeau, description, code_secteur, vol, div, yf_si_different?]
+[
+// ── US FINANCE ───────────────────────────────────────────────────────────────
+["C","Citigroup","Action","🇺🇸","Finance / Banque mondiale","FIN",0.28,3.8],
+["WFC","Wells Fargo","Action","🇺🇸","Finance / Banque","FIN",0.25,2.9],
+["AXP","American Express","Action","🇺🇸","Finance / Carte de crédit","FIN",0.22,1.2],
+["SCHW","Charles Schwab","Action","🇺🇸","Finance / Courtage","FIN",0.28,1.8],
+["COF","Capital One Financial","Action","🇺🇸","Finance / Carte de crédit","FIN",0.30,1.7],
+["USB","U.S. Bancorp","Action","🇺🇸","Finance / Banque régionale","FIN",0.22,4.5],
+["PNC","PNC Financial Services","Action","🇺🇸","Finance / Banque régionale","FIN",0.22,3.5],
+["TFC","Truist Financial","Action","🇺🇸","Finance / Banque régionale","FIN",0.25,5.0],
+["SPGI","S&P Global","Action","🇺🇸","Finance / Notation & Data","FIN",0.22,0.8],
+["MCO","Moody's Corporation","Action","🇺🇸","Finance / Notation","FIN",0.23,0.9],
+["ICE","Intercontinental Exchange","Action","🇺🇸","Finance / Bourse","FIN",0.20,1.1],
+["CME","CME Group","Action","🇺🇸","Finance / Dérivés","FIN",0.18,2.2],
+["MSCI","MSCI Inc.","Action","🇺🇸","Finance / Indices","FIN",0.22,0.8],
+["BX","Blackstone","Action","🇺🇸","Finance / Private Equity","FIN",0.32,3.5],
+["KKR","KKR & Co.","Action","🇺🇸","Finance / Private Equity","FIN",0.34,0.6],
+["APO","Apollo Global Management","Action","🇺🇸","Finance / Gestion d'actifs","FIN",0.35,1.5],
+["CG","Carlyle Group","Action","🇺🇸","Finance / Private Equity","FIN",0.38,3.0],
+["ARES","Ares Management","Action","🇺🇸","Finance / Credit Alternatif","FIN",0.30,2.5],
+["FI","Fiserv","Action","🇺🇸","Finance / Paiements","FIN",0.22,0.0],
+["FIS","Fidelity National Information","Action","🇺🇸","Finance / Tech Financière","FIN",0.28,2.0],
+["PAYX","Paychex","Action","🇺🇸","Finance / Paie & RH","FIN",0.18,3.0],
+["ADP","Automatic Data Processing","Action","🇺🇸","Finance / Paie","FIN",0.17,2.1],
+["ALLY","Ally Financial","Action","🇺🇸","Finance / Banque Auto","FIN",0.32,4.5],
+["SYF","Synchrony Financial","Action","🇺🇸","Finance / Carte de crédit","FIN",0.32,2.0],
+["DFS","Discover Financial","Action","🇺🇸","Finance / Carte de crédit","FIN",0.28,2.0],
+["TROW","T. Rowe Price","Action","🇺🇸","Finance / Gestion d'actifs","FIN",0.25,4.5],
+["STT","State Street","Action","🇺🇸","Finance / Dépositaire","FIN",0.22,3.8],
+["BK","Bank of New York Mellon","Action","🇺🇸","Finance / Dépositaire","FIN",0.20,3.0],
+["RF","Regions Financial","Action","🇺🇸","Finance / Banque régionale","FIN",0.25,4.5],
+["KEY","KeyCorp","Action","🇺🇸","Finance / Banque régionale","FIN",0.28,5.0],
+["HBAN","Huntington Bancshares","Action","🇺🇸","Finance / Banque régionale","FIN",0.25,4.8],
+["CFG","Citizens Financial","Action","🇺🇸","Finance / Banque régionale","FIN",0.26,4.5],
+["FITB","Fifth Third Bancorp","Action","🇺🇸","Finance / Banque régionale","FIN",0.26,4.0],
+["MTB","M&T Bank","Action","🇺🇸","Finance / Banque régionale","FIN",0.22,3.5],
+["ZION","Zions Bancorporation","Action","🇺🇸","Finance / Banque régionale","FIN",0.30,3.5],
+// ── US TECH ──────────────────────────────────────────────────────────────────
+["ADSK","Autodesk","Action","🇺🇸","IT / Logiciels CAO","IT",0.28,0.0],
+["NOW","ServiceNow","Action","🇺🇸","IT / Cloud Workflow","IT",0.30,0.0],
+["INTU","Intuit","Action","🇺🇸","IT / Logiciels Finance","IT",0.26,0.6],
+["CDNS","Cadence Design Systems","Action","🇺🇸","IT / EDA Semiconducteurs","IT",0.30,0.0],
+["KLAC","KLA Corporation","Action","🇺🇸","IT / Équipements Semi","IT",0.30,0.9],
+["LRCX","Lam Research","Action","🇺🇸","IT / Équipements Semi","IT",0.33,1.0],
+["TER","Teradyne","Action","🇺🇸","IT / Tests Semi","IT",0.35,0.5],
+["MRVL","Marvell Technology","Action","🇺🇸","IT / Semi-conducteurs","IT",0.40,0.4],
+["ON","ON Semiconductor","Action","🇺🇸","IT / Semi-conducteurs Power","IT",0.40,0.0],
+["STX","Seagate Technology","Action","🇺🇸","IT / Stockage","IT",0.32,4.5],
+["WDC","Western Digital","Action","🇺🇸","IT / Stockage & Flash","IT",0.38,0.0],
+["NTAP","NetApp","Action","🇺🇸","IT / Stockage Cloud","IT",0.28,2.0],
+["EPAM","EPAM Systems","Action","🇺🇸","IT / Services Software","IT",0.40,0.0],
+["CTSH","Cognizant Technology","Action","🇺🇸","IT / Services IT","IT",0.22,1.8],
+["ACN","Accenture","Action","🇮🇪","IT / Consulting","IT",0.22,1.5],
+["AKAM","Akamai Technologies","Action","🇺🇸","IT / CDN & Sécurité","IT",0.25,0.0],
+["KEYS","Keysight Technologies","Action","🇺🇸","IT / Instruments","IT",0.28,0.0],
+["TTWO","Take-Two Interactive","Action","🇺🇸","IT / Jeux Vidéo","IT",0.40,0.0],
+["EA","Electronic Arts","Action","🇺🇸","IT / Jeux Vidéo","IT",0.28,0.5],
+["RBLX","Roblox Corporation","Action","🇺🇸","IT / Métaverse Gaming","IT",0.60,0.0],
+["U","Unity Software","Action","🇺🇸","IT / Moteur 3D","IT",0.65,0.0],
+["HOOD","Robinhood Markets","Action","🇺🇸","Finance / Courtage Retail","FIN",0.65,0.0],
+["SOFI","SoFi Technologies","Action","🇺🇸","Finance / Néobanque","FIN",0.62,0.0],
+["AFRM","Affirm Holdings","Action","🇺🇸","Finance / BNPL","FIN",0.70,0.0],
+["BILL","BILL Holdings","Action","🇺🇸","IT / Paiements PME","IT",0.55,0.0],
+["GPN","Global Payments","Action","🇺🇸","Finance / Paiements","FIN",0.30,0.8],
+["SMCI","Super Micro Computer","Action","🇺🇸","IT / Serveurs IA","IT",0.75,0.0],
+["DELL","Dell Technologies","Action","🇺🇸","IT / PC & Serveurs","IT",0.28,1.5],
+["HPE","Hewlett Packard Enterprise","Action","🇺🇸","IT / Serveurs & Cloud","IT",0.25,3.0],
+["HPQ","HP Inc.","Action","🇺🇸","IT / PC & Imprimantes","IT",0.22,3.5],
+["NTNX","Nutanix","Action","🇺🇸","IT / Cloud HCI","IT",0.45,0.0],
+["ZS","Zscaler","Action","🇺🇸","IT / Cybersécurité Cloud","IT",0.50,0.0],
+["OKTA","Okta","Action","🇺🇸","IT / Identité Cloud","IT",0.50,0.0],
+["HUBS","HubSpot","Action","🇺🇸","IT / CRM Marketing","IT",0.45,0.0],
+["WDAY","Workday","Action","🇺🇸","IT / RH Cloud","IT",0.32,0.0],
+["TTD","The Trade Desk","Action","🇺🇸","IT / Pub Programmatique","IT",0.55,0.0],
+["TWLO","Twilio","Action","🇺🇸","IT / Communication Cloud","IT",0.55,0.0],
+["MDB","MongoDB","Action","🇺🇸","IT / Base de données Cloud","IT",0.55,0.0],
+["ESTC","Elastic NV","Action","🇺🇸","IT / Recherche données","IT",0.50,0.0],
+["GTLB","GitLab","Action","🇺🇸","IT / DevOps","IT",0.55,0.0],
+["CFLT","Confluent","Action","🇺🇸","IT / Data Streaming","IT",0.60,0.0],
+["RIVN","Rivian Automotive","Action","🇺🇸","Conso. discr. / VE","CONS",0.75,0.0],
+["LCID","Lucid Group","Action","🇺🇸","Conso. discr. / VE Luxe","CONS",0.80,0.0],
+["NIO","NIO Inc. (ADR)","Action","🇨🇳","Conso. discr. / VE Chine","CONS",0.65,0.0],
+["XPEV","XPeng Inc. (ADR)","Action","🇨🇳","Conso. discr. / VE Chine","CONS",0.70,0.0],
+["LI","Li Auto Inc. (ADR)","Action","🇨🇳","Conso. discr. / VE Chine","CONS",0.62,0.0],
+// ── US SANTÉ ─────────────────────────────────────────────────────────────────
+["TMO","Thermo Fisher Scientific","Action","🇺🇸","Santé / Sciences de la Vie","HEALTH",0.22,0.2],
+["DHR","Danaher Corporation","Action","🇺🇸","Santé / Diagnostic","HEALTH",0.22,0.4],
+["ABT","Abbott Laboratories","Action","🇺🇸","Santé / Dispositifs Médicaux","HEALTH",0.20,1.8],
+["MDT","Medtronic","Action","🇺🇸","Santé / Dispositifs Médicaux","HEALTH",0.20,3.5],
+["SYK","Stryker Corporation","Action","🇺🇸","Santé / Chirurgie","HEALTH",0.22,1.0],
+["BSX","Boston Scientific","Action","🇺🇸","Santé / Dispositifs Médicaux","HEALTH",0.24,0.0],
+["EW","Edwards Lifesciences","Action","🇺🇸","Santé / Cardiologie","HEALTH",0.28,0.0],
+["ISRG","Intuitive Surgical","Action","🇺🇸","Santé / Chirurgie Robotique","HEALTH",0.28,0.0],
+["BMY","Bristol-Myers Squibb","Action","🇺🇸","Santé / Oncologie","HEALTH",0.22,4.5],
+["GILD","Gilead Sciences","Action","🇺🇸","Santé / Antiviral","HEALTH",0.22,4.0],
+["REGN","Regeneron Pharmaceuticals","Action","🇺🇸","Santé / Biotech","HEALTH",0.28,0.0],
+["BIIB","Biogen","Action","🇺🇸","Santé / Neurologie","HEALTH",0.32,0.0],
+["VRTX","Vertex Pharmaceuticals","Action","🇺🇸","Santé / Fibrose kystique","HEALTH",0.28,0.0],
+["ILMN","Illumina","Action","🇺🇸","Santé / Génomique","HEALTH",0.38,0.0],
+["ZTS","Zoetis","Action","🇺🇸","Santé / Médicaments Vétérinaires","HEALTH",0.22,0.8],
+["IDXX","Idexx Laboratories","Action","🇺🇸","Santé / Diagnostics Vétérinaires","HEALTH",0.28,0.0],
+["IQV","IQVIA Holdings","Action","🇺🇸","Santé / CRO","HEALTH",0.25,0.0],
+["HCA","HCA Healthcare","Action","🇺🇸","Santé / Hôpitaux","HEALTH",0.24,0.9],
+["ELV","Elevance Health","Action","🇺🇸","Santé / Assurance","HEALTH",0.20,1.2],
+["CI","Cigna Group","Action","🇺🇸","Santé / Assurance","HEALTH",0.20,1.5],
+["HUM","Humana","Action","🇺🇸","Santé / Assurance","HEALTH",0.22,0.9],
+["CVS","CVS Health","Action","🇺🇸","Santé / Pharmacie & Assurance","HEALTH",0.22,3.8],
+["WBA","Walgreens Boots Alliance","Action","🇺🇸","Santé / Pharmacie","HEALTH",0.32,4.0],
+["BDX","Becton Dickinson","Action","🇺🇸","Santé / Dispositifs Médicaux","HEALTH",0.20,1.5],
+["DXCM","DexCom","Action","🇺🇸","Santé / Glucose Continu","HEALTH",0.42,0.0],
+["ALGN","Align Technology","Action","🇺🇸","Santé / Orthodontie","HEALTH",0.38,0.0],
+["TFX","Teleflex","Action","🇺🇸","Santé / Dispositifs Médicaux","HEALTH",0.22,0.4],
+["RMD","ResMed","Action","🇺🇸","Santé / Apnée du sommeil","HEALTH",0.25,1.0],
+["HOLX","Hologic","Action","🇺🇸","Santé / Diagnostic féminin","HEALTH",0.25,0.0],
+["MCK","McKesson","Action","🇺🇸","Santé / Distribution pharma","HEALTH",0.20,0.5],
+["COR","Cencora (AmerisourceBergen)","Action","🇺🇸","Santé / Distribution pharma","HEALTH",0.20,1.0],
+["CAH","Cardinal Health","Action","🇺🇸","Santé / Distribution médicale","HEALTH",0.22,2.2],
+// ── US CONSOMMATION ───────────────────────────────────────────────────────────
+["TGT","Target Corporation","Action","🇺🇸","Conso. discr. / Grande surface","CONS",0.24,3.5],
+["LOW","Lowe's Companies","Action","🇺🇸","Conso. discr. / Bricolage","CONS",0.22,2.0],
+["TJX","TJX Companies","Action","🇺🇸","Conso. discr. / Déstockage","CONS",0.18,1.4],
+["BKNG","Booking Holdings","Action","🇺🇸","Conso. discr. / Voyage en ligne","CONS",0.28,0.0],
+["MAR","Marriott International","Action","🇺🇸","Conso. discr. / Hôtellerie","CONS",0.24,1.0],
+["HLT","Hilton Worldwide","Action","🇺🇸","Conso. discr. / Hôtellerie","CONS",0.24,0.4],
+["RCL","Royal Caribbean","Action","🇺🇸","Conso. discr. / Croisières","CONS",0.38,1.0],
+["CCL","Carnival Corporation","Action","🇺🇸","Conso. discr. / Croisières","CONS",0.40,0.0],
+["LVS","Las Vegas Sands","Action","🇺🇸","Conso. discr. / Casino","CONS",0.38,2.0],
+["MGM","MGM Resorts","Action","🇺🇸","Conso. discr. / Casino & Hôtel","CONS",0.38,0.0],
+["WYNN","Wynn Resorts","Action","🇺🇸","Conso. discr. / Casino Luxe","CONS",0.40,0.0],
+["F","Ford Motor Company","Action","🇺🇸","Conso. discr. / Automobile","CONS",0.35,4.0],
+["GM","General Motors","Action","🇺🇸","Conso. discr. / Automobile","CONS",0.32,1.0],
+["YUM","Yum! Brands","Action","🇺🇸","Conso. discr. / Restauration","CONS",0.20,1.8],
+["CMG","Chipotle Mexican Grill","Action","🇺🇸","Conso. discr. / Restauration","CONS",0.30,0.0],
+["DPZ","Domino's Pizza","Action","🇺🇸","Conso. discr. / Restauration","CONS",0.24,1.3],
+["DNUT","Krispy Kreme","Action","🇺🇸","Conso. discr. / Restauration","CONS",0.30,4.0],
+["EL","Estée Lauder Companies","Action","🇺🇸","Conso. base / Cosmétiques","CSTAPLE",0.28,2.5],
+["ULTA","Ulta Beauty","Action","🇺🇸","Conso. discr. / Beauté","CONS",0.28,0.0],
+["LULU","Lululemon Athletica","Action","🇨🇦","Conso. discr. / Vêtements Sport","CONS",0.35,0.0],
+["RL","Ralph Lauren","Action","🇺🇸","Conso. discr. / Luxe Américain","CONS",0.28,2.0],
+["TPR","Tapestry","Action","🇺🇸","Conso. discr. / Maroquinerie","CONS",0.30,3.5],
+["PVH","PVH Corp.","Action","🇺🇸","Conso. discr. / Mode (Calvin Klein)","CONS",0.30,0.1],
+["AZO","AutoZone","Action","🇺🇸","Conso. discr. / Pièces Auto","CONS",0.22,0.0],
+["ORLY","O'Reilly Automotive","Action","🇺🇸","Conso. discr. / Pièces Auto","CONS",0.20,0.0],
+["DLTR","Dollar Tree","Action","🇺🇸","Conso. base / Discount","CSTAPLE",0.22,0.0],
+["DG","Dollar General","Action","🇺🇸","Conso. base / Discount","CSTAPLE",0.22,1.5],
+["EBAY","eBay Inc.","Action","🇺🇸","Conso. discr. / E-commerce","CONS",0.25,2.0],
+["ETSY","Etsy Inc.","Action","🇺🇸","Conso. discr. / Artisanat","CONS",0.45,0.0],
+["W","Wayfair","Action","🇺🇸","Conso. discr. / Meubles","CONS",0.55,0.0],
+["PTON","Peloton Interactive","Action","🇺🇸","Conso. discr. / Fitness","CONS",0.70,0.0],
+["DKNG","DraftKings","Action","🇺🇸","Conso. discr. / Paris sportifs","CONS",0.60,0.0],
+// ── US CONSO. BASE ────────────────────────────────────────────────────────────
+["PM","Philip Morris International","Action","🇺🇸","Conso. base / Tabac","CSTAPLE",0.18,5.5],
+["MO","Altria Group","Action","🇺🇸","Conso. base / Tabac USA","CSTAPLE",0.20,8.5],
+["BTI","British American Tobacco (ADR)","Action","🇬🇧","Conso. base / Tabac","CSTAPLE",0.22,9.0,"BTI"],
+["MDLZ","Mondelez International","Action","🇺🇸","Conso. base / Biscuits & Chocolat","CSTAPLE",0.18,2.5],
+["GIS","General Mills","Action","🇺🇸","Conso. base / Céréales","CSTAPLE",0.15,3.5],
+["K","Kellanova (Kellogg)","Action","🇺🇸","Conso. base / Céréales","CSTAPLE",0.15,2.8],
+["CPB","Campbell Soup","Action","🇺🇸","Conso. base / Soupes","CSTAPLE",0.15,3.5],
+["HSY","Hershey Company","Action","🇺🇸","Conso. base / Chocolat","CSTAPLE",0.16,2.8],
+["MKC","McCormick & Company","Action","🇺🇸","Conso. base / Épices","CSTAPLE",0.17,2.0],
+["TSN","Tyson Foods","Action","🇺🇸","Conso. base / Viande","CSTAPLE",0.22,3.5],
+["CAG","Conagra Brands","Action","🇺🇸","Conso. base / Alimentation","CSTAPLE",0.18,5.0],
+["CL","Colgate-Palmolive","Action","🇺🇸","Conso. base / Hygiène","CSTAPLE",0.15,2.5],
+["KMB","Kimberly-Clark","Action","🇺🇸","Conso. base / Papier","CSTAPLE",0.15,3.5],
+["CLX","Clorox Company","Action","🇺🇸","Conso. base / Produits ménagers","CSTAPLE",0.18,3.5],
+["SYY","Sysco Corporation","Action","🇺🇸","Conso. base / Distribution alimentaire","CSTAPLE",0.20,2.5],
+["STZ","Constellation Brands","Action","🇺🇸","Conso. base / Alcool (Corona)","CSTAPLE",0.22,1.8],
+["BF-B","Brown-Forman","Action","🇺🇸","Conso. base / Spiritueux","CSTAPLE",0.20,1.8,"BF-B"],
+// ── US INDUSTRIE ──────────────────────────────────────────────────────────────
+["CAT","Caterpillar","Action","🇺🇸","Industrie / Engins TP","IND",0.25,1.5],
+["DE","Deere & Company","Action","🇺🇸","Industrie / Machines Agricoles","IND",0.24,1.2],
+["GE","GE Aerospace","Action","🇺🇸","Industrie / Moteurs Avions","IND",0.24,0.7],
+["GEHC","GE HealthCare","Action","🇺🇸","Santé / Imagerie Médicale","HEALTH",0.26,0.3],
+["HON","Honeywell International","Action","🇺🇸","Industrie / Automatisation","IND",0.18,2.2],
+["MMM","3M Company","Action","🇺🇸","Industrie / Conglomérat","IND",0.22,7.0],
+["RTX","RTX Corporation (Raytheon)","Action","🇺🇸","Industrie / Défense","IND",0.20,2.0],
+["LMT","Lockheed Martin","Action","🇺🇸","Industrie / Défense","IND",0.18,2.5],
+["NOC","Northrop Grumman","Action","🇺🇸","Industrie / Défense","IND",0.18,1.5],
+["GD","General Dynamics","Action","🇺🇸","Industrie / Défense & Navale","IND",0.18,2.0],
+["BA","Boeing Company","Action","🇺🇸","Industrie / Aéronautique","IND",0.35,0.0],
+["HII","Huntington Ingalls","Action","🇺🇸","Industrie / Naval","IND",0.18,2.0],
+["L3H","L3Harris Technologies","Action","🇺🇸","Industrie / Électronique Défense","IND",0.18,2.2,"LHX"],
+["TDG","TransDigm Group","Action","🇺🇸","Industrie / Composants Aéro","IND",0.24,0.0],
+["UPS","UPS","Action","🇺🇸","Industrie / Logistique","IND",0.22,5.0],
+["FDX","FedEx Corporation","Action","🇺🇸","Industrie / Logistique","IND",0.25,2.0],
+["CSX","CSX Corporation","Action","🇺🇸","Industrie / Rail","IND",0.20,1.3],
+["NSC","Norfolk Southern","Action","🇺🇸","Industrie / Rail","IND",0.20,2.2],
+["UNP","Union Pacific","Action","🇺🇸","Industrie / Rail","IND",0.20,2.2],
+["ODFL","Old Dominion Freight","Action","🇺🇸","Industrie / Transport routier","IND",0.22,0.4],
+["WM","Waste Management","Action","🇺🇸","Industrie / Déchets","IND",0.18,1.5],
+["RSG","Republic Services","Action","🇺🇸","Industrie / Déchets","IND",0.18,1.2],
+["FAST","Fastenal Company","Action","🇺🇸","Industrie / Fixations","IND",0.22,2.5],
+["GWW","W.W. Grainger","Action","🇺🇸","Industrie / Distribution","IND",0.20,0.8],
+["PHM","PulteGroup","Action","🇺🇸","Industrie / Construction","IND",0.28,0.6],
+["DHI","D.R. Horton","Action","🇺🇸","Industrie / Construction","IND",0.28,0.8],
+["LEN","Lennar Corporation","Action","🇺🇸","Industrie / Construction","IND",0.28,1.2],
+["TOL","Toll Brothers","Action","🇺🇸","Industrie / Construction Luxe","IND",0.28,0.6],
+["EMR","Emerson Electric","Action","🇺🇸","Industrie / Automatisation","IND",0.20,2.0],
+["ETN","Eaton Corporation","Action","🇺🇸","Industrie / Gestion énergie","IND",0.22,1.0],
+["ROK","Rockwell Automation","Action","🇺🇸","Industrie / Automates","IND",0.25,1.5],
+["CARR","Carrier Global","Action","🇺🇸","Industrie / CVC","IND",0.22,1.2],
+["OTIS","Otis Worldwide","Action","🇺🇸","Industrie / Ascenseurs","IND",0.20,1.5],
+["GNRC","Generac Holdings","Action","🇺🇸","Industrie / Générateurs","IND",0.40,0.0],
+["AXON","Axon Enterprise","Action","🇺🇸","Industrie / Sécurité & Taser","IND",0.40,0.0],
+["IR","Ingersoll Rand","Action","🇺🇸","Industrie / Compresseurs","IND",0.22,0.1],
+["PH","Parker-Hannifin","Action","🇺🇸","Industrie / Hydraulique","IND",0.22,1.0],
+["IDEX","IDEX Corporation","Action","🇺🇸","Industrie / Pompes","IND",0.20,1.2],
+["XYL","Xylem","Action","🇺🇸","Industrie / Eau","IND",0.22,1.0],
+["ROP","Roper Technologies","Action","🇺🇸","Industrie / Logiciels Industriels","IND",0.20,0.5],
+["AME","AMETEK","Action","🇺🇸","Industrie / Instruments","IND",0.20,0.3],
+// ── US ÉNERGIE ────────────────────────────────────────────────────────────────
+["COP","ConocoPhillips","Action","🇺🇸","Énergie / Pétrole E&P","ENERGY",0.28,3.0],
+["OXY","Occidental Petroleum","Action","🇺🇸","Énergie / Pétrole","ENERGY",0.30,1.5],
+["SLB","SLB (Schlumberger)","Action","🇺🇸","Énergie / Services pétroliers","ENERGY",0.28,2.8],
+["HAL","Halliburton","Action","🇺🇸","Énergie / Services pétroliers","ENERGY",0.30,2.0],
+["DVN","Devon Energy","Action","🇺🇸","Énergie / E&P","ENERGY",0.35,5.0],
+["FANG","Diamondback Energy","Action","🇺🇸","Énergie / E&P Permian","ENERGY",0.30,4.0],
+["MPC","Marathon Petroleum","Action","🇺🇸","Énergie / Raffinage","ENERGY",0.28,2.0],
+["PSX","Phillips 66","Action","🇺🇸","Énergie / Raffinage","ENERGY",0.26,3.5],
+["VLO","Valero Energy","Action","🇺🇸","Énergie / Raffinage","ENERGY",0.28,3.0],
+["EOG","EOG Resources","Action","🇺🇸","Énergie / E&P","ENERGY",0.28,3.5],
+["BKR","Baker Hughes","Action","🇺🇸","Énergie / Services pétroliers","ENERGY",0.28,2.5],
+["WMB","Williams Companies","Action","🇺🇸","Énergie / Gazoducs","ENERGY",0.22,5.5],
+["KMI","Kinder Morgan","Action","🇺🇸","Énergie / Gazoducs","ENERGY",0.20,6.5],
+["LNG","Cheniere Energy","Action","🇺🇸","Énergie / GNL","ENERGY",0.28,1.0],
+["ET","Energy Transfer","Action","🇺🇸","Énergie / Midstream MLP","ENERGY",0.25,8.0],
+["OKE","ONEOK","Action","🇺🇸","Énergie / Midstream","ENERGY",0.22,5.5],
+["APA","APA Corporation","Action","🇺🇸","Énergie / E&P","ENERGY",0.35,3.5],
+["MRO","Marathon Oil","Action","🇺🇸","Énergie / E&P","ENERGY",0.32,1.5],
+// ── US MATÉRIAUX ──────────────────────────────────────────────────────────────
+["NEM","Newmont Corporation","Action","🇺🇸","Matériaux / Or","MAT",0.28,2.0],
+["FCX","Freeport-McMoRan","Action","🇺🇸","Matériaux / Cuivre","MAT",0.35,1.5],
+["APD","Air Products & Chemicals","Action","🇺🇸","Matériaux / Gaz industriels","MAT",0.18,2.5],
+["LIN","Linde plc","Action","🇮🇪","Matériaux / Gaz industriels","MAT",0.18,1.2],
+["SHW","Sherwin-Williams","Action","🇺🇸","Matériaux / Peintures","MAT",0.20,0.8],
+["ECL","Ecolab","Action","🇺🇸","Matériaux / Produits nettoyants","MAT",0.18,1.0],
+["DD","DuPont de Nemours","Action","🇺🇸","Matériaux / Chimie spécialisée","MAT",0.22,2.0],
+["DOW","Dow Inc.","Action","🇺🇸","Matériaux / Chimie","MAT",0.25,5.5],
+["LYB","LyondellBasell","Action","🇺🇸","Matériaux / Chimie","MAT",0.28,6.0],
+["CF","CF Industries","Action","🇺🇸","Matériaux / Engrais","MAT",0.28,2.0],
+["MOS","Mosaic Company","Action","🇺🇸","Matériaux / Engrais","MAT",0.30,2.5],
+["NUE","Nucor Corporation","Action","🇺🇸","Matériaux / Acier","MAT",0.28,1.5],
+["STLD","Steel Dynamics","Action","🇺🇸","Matériaux / Acier","MAT",0.28,1.2],
+["X","U.S. Steel","Action","🇺🇸","Matériaux / Acier","MAT",0.35,0.5],
+["RS","Reliance Steel","Action","🇺🇸","Matériaux / Distribution acier","MAT",0.22,1.5],
+["ALB","Albemarle Corporation","Action","🇺🇸","Matériaux / Lithium","MAT",0.40,1.5],
+["LAC","Lithium Americas","Action","🇨🇦","Matériaux / Lithium","MAT",0.65,0.0],
+["PAAS","Pan American Silver","Action","🇨🇦","Matériaux / Argent & Or","MAT",0.38,2.0],
+// ── US COMMUNICATION ──────────────────────────────────────────────────────────
+["CMCSA","Comcast Corporation","Action","🇺🇸","Communication / Câble & Media","COMM",0.22,3.0],
+["CHTR","Charter Communications","Action","🇺🇸","Communication / Câble","COMM",0.25,0.0],
+["T","AT&T Inc.","Action","🇺🇸","Communication / Télécom","COMM",0.18,6.5],
+["VZ","Verizon Communications","Action","🇺🇸","Communication / Télécom","COMM",0.16,7.0],
+["TMUS","T-Mobile US","Action","🇺🇸","Communication / Télécom Mobile","COMM",0.22,1.5],
+["WBD","Warner Bros. Discovery","Action","🇺🇸","Communication / Streaming","COMM",0.45,0.0],
+["PARA","Paramount Global","Action","🇺🇸","Communication / Media","COMM",0.45,0.0],
+["FOX","Fox Corporation","Action","🇺🇸","Communication / Media","COMM",0.28,1.5],
+["OMC","Omnicom Group","Action","🇺🇸","Communication / Publicité","COMM",0.22,3.5],
+["IPG","Interpublic Group","Action","🇺🇸","Communication / Publicité","COMM",0.22,4.5],
+["SNAP","Snap Inc.","Action","🇺🇸","Communication / Réseaux sociaux","COMM",0.65,0.0],
+["PINS","Pinterest","Action","🇺🇸","Communication / Réseaux sociaux","COMM",0.45,0.0],
+["MTCH","Match Group","Action","🇺🇸","Communication / Dating","COMM",0.45,0.0],
+["IAC","IAC Inc.","Action","🇺🇸","Communication / Internet","COMM",0.40,0.0],
+// ── US IMMOBILIER ─────────────────────────────────────────────────────────────
+["WELL","Welltower","Action","🇺🇸","Immobilier / Santé REIT","REIT",0.22,2.5],
+["VTR","Ventas","Action","🇺🇸","Immobilier / Santé REIT","REIT",0.22,3.5],
+["EXR","Extra Space Storage","Action","🇺🇸","Immobilier / Self-stockage","REIT",0.22,4.0],
+["PSA","Public Storage","Action","🇺🇸","Immobilier / Self-stockage","REIT",0.18,4.5],
+["AVB","AvalonBay Communities","Action","🇺🇸","Immobilier / Résidentiel","REIT",0.20,3.0],
+["EQR","Equity Residential","Action","🇺🇸","Immobilier / Résidentiel","REIT",0.20,3.5],
+["SPG","Simon Property Group","Action","🇺🇸","Immobilier / Centres commerciaux","REIT",0.25,5.5],
+["BXP","Boston Properties","Action","🇺🇸","Immobilier / Bureaux","REIT",0.28,5.5],
+["ARE","Alexandria Real Estate","Action","🇺🇸","Immobilier / Labo & Sciences","REIT",0.22,4.5],
+["DLR","Digital Realty Trust","Action","🇺🇸","Immobilier / Data Centers","REIT",0.22,3.0],
+["EQIX","Equinix","Action","🇺🇸","Immobilier / Data Centers","REIT",0.22,2.0],
+["CCI","Crown Castle","Action","🇺🇸","Immobilier / Tours Télécom","REIT",0.22,6.0],
+["SBA","SBA Communications","Action","🇺🇸","Immobilier / Tours Télécom","REIT",0.22,2.0],
+["WY","Weyerhaeuser","Action","🇺🇸","Immobilier / Forêts REIT","REIT",0.22,3.5],
+// ── US UTILITIES ──────────────────────────────────────────────────────────────
+["DUK","Duke Energy","Action","🇺🇸","Utilities / Électricité","UTIL",0.15,4.5],
+["SO","Southern Company","Action","🇺🇸","Utilities / Électricité","UTIL",0.15,4.2],
+["D","Dominion Energy","Action","🇺🇸","Utilities / Gaz & Électricité","UTIL",0.16,5.5],
+["AEP","American Electric Power","Action","🇺🇸","Utilities / Électricité","UTIL",0.15,4.0],
+["XEL","Xcel Energy","Action","🇺🇸","Utilities / Renouvelable","UTIL",0.16,3.5],
+["SRE","Sempra Energy","Action","🇺🇸","Utilities / Gaz","UTIL",0.18,3.5],
+["EXC","Exelon Corporation","Action","🇺🇸","Utilities / Électricité","UTIL",0.15,4.0],
+["ED","Consolidated Edison","Action","🇺🇸","Utilities / NYC","UTIL",0.15,3.5],
+["AWK","American Water Works","Action","🇺🇸","Utilities / Eau","UTIL",0.18,2.0],
+["ETR","Entergy Corporation","Action","🇺🇸","Utilities / Électricité Sud","UTIL",0.16,4.5],
+["PPL","PPL Corporation","Action","🇺🇸","Utilities / Électricité","UTIL",0.16,3.5],
+["CMS","CMS Energy","Action","🇺🇸","Utilities / Michigan","UTIL",0.15,3.5],
+// ── CANADA ───────────────────────────────────────────────────────────────────
+["RY","Royal Bank of Canada","Action","🇨🇦","Finance / Banque","FIN",0.18,3.8,"RY"],
+["TD","Toronto-Dominion Bank","Action","🇨🇦","Finance / Banque","FIN",0.18,4.5,"TD"],
+["CNR","Canadian National Railway","Action","🇨🇦","Industrie / Rail","IND",0.18,2.0,"CNI"],
+["ENB","Enbridge","Action","🇨🇦","Énergie / Gazoducs","ENERGY",0.18,7.5,"ENB"],
+["BCE","BCE Inc.","Action","🇨🇦","Communication / Télécom","COMM",0.18,10.0,"BCE"],
+["CNQ","Canadian Natural Resources","Action","🇨🇦","Énergie / Pétrole Sables","ENERGY",0.25,4.0,"CNQ"],
+["SU","Suncor Energy","Action","🇨🇦","Énergie / Pétrole Sables","ENERGY",0.25,4.5,"SU"],
+["ABX","Barrick Gold","Action","🇨🇦","Matériaux / Or","MAT",0.30,2.5,"GOLD"],
+["AEM","Agnico Eagle Mines","Action","🇨🇦","Matériaux / Or","MAT",0.28,3.0,"AEM"],
+["WPM","Wheaton Precious Metals","Action","🇨🇦","Matériaux / Royalties Or","MAT",0.30,1.5,"WPM"],
+// ── UK ───────────────────────────────────────────────────────────────────────
+["DIAGEO","Diageo PLC","Action","🇬🇧","Conso. base / Spiritueux","CSTAPLE",0.18,3.5,"DGE.L"],
+["BARCLAYS","Barclays PLC","Action","🇬🇧","Finance / Banque","FIN",0.28,4.5,"BARC.L"],
+["LLOYDS","Lloyds Banking Group","Action","🇬🇧","Finance / Banque","FIN",0.25,6.0,"LLOY.L"],
+["NATWEST","NatWest Group","Action","🇬🇧","Finance / Banque","FIN",0.25,5.5,"NWG.L"],
+["VODAFONE","Vodafone Group","Action","🇬🇧","Communication / Télécom","COMM",0.22,11.0,"VOD.L"],
+["BTELESCOM","BT Group","Action","🇬🇧","Communication / Télécom","COMM",0.25,6.0,"BT-A.L"],
+["ROLLS","Rolls-Royce Holdings","Action","🇬🇧","Industrie / Moteurs Avions","IND",0.40,0.5,"RR.L"],
+["BAESYS","BAE Systems","Action","🇬🇧","Industrie / Défense","IND",0.20,2.5,"BA.L"],
+["EXPERIAN","Experian PLC","Action","🇮🇪","Finance / Data & Scoring","FIN",0.22,1.2,"EXPN.L"],
+["RELX","RELX PLC","Action","🇬🇧","IT / Info Professionnelle","IT",0.18,1.5,"REL.L"],
+["WPP","WPP PLC","Action","🇬🇧","Communication / Publicité","COMM",0.25,6.0,"WPP.L"],
+["COMPASS","Compass Group","Action","🇬🇧","Industrie / Restauration collective","IND",0.18,2.0,"CPG.L"],
+["FLUTTER","Flutter Entertainment","Action","🇮🇪","Conso. discr. / Paris sportifs","CONS",0.32,0.0,"FLTR.L"],
+["TESCO","Tesco PLC","Action","🇬🇧","Conso. base / Grande distribution","CSTAPLE",0.18,4.5,"TSCO.L"],
+["NEXRETAIL","Next PLC","Action","🇬🇧","Conso. discr. / Mode","CONS",0.22,2.5,"NXT.L"],
+["BURBERRY","Burberry Group","Action","🇬🇧","Conso. discr. / Luxe","CONS",0.28,5.0,"BRBY.L"],
+["MARKS","Marks & Spencer","Action","🇬🇧","Conso. discr. / Mode & Alim.","CONS",0.25,2.0,"MKS.L"],
+["ASHTEAD","Ashtead Group","Action","🇬🇧","Industrie / Location équipements","IND",0.25,1.5,"AHT.L"],
+["SEGRO","Segro PLC","Action","🇬🇧","Immobilier / Logistique","REIT",0.22,3.0,"SGRO.L"],
+["LEGALGEN","Legal & General","Action","🇬🇧","Finance / Assurance","FIN",0.20,9.0,"LGEN.L"],
+["STCHART","Standard Chartered","Action","🇬🇧","Finance / Banque Asie","FIN",0.25,3.5,"STAN.L"],
+["ANGLOAM","Anglo American","Action","🇬🇧","Matériaux / Mines","MAT",0.30,5.0,"AAL.L"],
+["RIOTINTO","Rio Tinto (London)","Action","🇬🇧","Matériaux / Mines","MAT",0.22,7.0,"RIO.L"],
+["GLAXO","GSK PLC","Action","🇬🇧","Santé / Pharma","HEALTH",0.18,4.0,"GSK.L"],
+["ASTRAZEN","AstraZeneca PLC (London)","Action","🇬🇧","Santé / Oncologie","HEALTH",0.18,2.0,"AZN.L"],
+// ── FRANCE (complément) ───────────────────────────────────────────────────────
+["ENGIE","Engie SA","Action","🇫🇷","Utilities / Énergie","UTIL",0.18,6.0,"ENGI.PA"],
+["AXA","AXA SA","Action","🇫🇷","Finance / Assurance","FIN",0.20,6.5,"CS.PA"],
+["DANONE","Danone SA","Action","🇫🇷","Conso. base / Alimentation","CSTAPLE",0.16,3.5,"BN.PA"],
+["MICHELIN","Michelin","Action","🇫🇷","Industrie / Pneumatiques","IND",0.22,3.5,"ML.PA"],
+["ESSILUX","EssilorLuxottica","Action","🇫🇷","Santé / Optique","HEALTH",0.18,1.5,"EL.PA"],
+["RENAULT","Renault SA","Action","🇫🇷","Conso. discr. / Automobile","CONS",0.30,3.0,"RNO.PA"],
+["STGOBAIN","Saint-Gobain","Action","🇫🇷","Matériaux / Construction","MAT",0.22,2.5,"SGO.PA"],
+["LEGRAND","Legrand SA","Action","🇫🇷","Industrie / Électricité","IND",0.20,2.0,"LR.PA"],
+["SAFRAN","Safran SA","Action","🇫🇷","Industrie / Moteurs Aéro","IND",0.22,1.0,"SAF.PA"],
+["SODEXO","Sodexo SA","Action","🇫🇷","Industrie / Services","IND",0.18,3.0,"SW.PA"],
+["PERNOD","Pernod Ricard","Action","🇫🇷","Conso. base / Spiritueux","CSTAPLE",0.20,3.5,"RI.PA"],
+["HERMES2","Hermès International","Action","🇫🇷","Conso. discr. / Luxe exclusif","CONS",0.22,0.6,"RMS.PA"],
+["STELLANTIS","Stellantis NV","Action","🇫🇷","Conso. discr. / Automobile","CONS",0.30,8.0,"STLAM.MI"],
+// ── ALLEMAGNE ─────────────────────────────────────────────────────────────────
+["MERCEDES","Mercedes-Benz Group","Action","🇩🇪","Conso. discr. / Automobile","CONS",0.25,8.0,"MBG.DE"],
+["VOLKSWAGEN","Volkswagen AG","Action","🇩🇪","Conso. discr. / Automobile","CONS",0.28,9.0,"VOW3.DE"],
+["MUNICHRE","Munich Re","Action","🇩🇪","Finance / Réassurance","FIN",0.18,3.5,"MUV2.DE"],
+["DEUTSCHEBANK","Deutsche Bank","Action","🇩🇪","Finance / Banque","FIN",0.32,3.0,"DBK.DE"],
+["COMMERZBANK","Commerzbank AG","Action","🇩🇪","Finance / Banque","FIN",0.30,4.0,"CBK.DE"],
+["EONPOWER","E.ON SE","Action","🇩🇪","Utilities / Énergie","UTIL",0.18,5.0,"EOAN.DE"],
+["RWEPOWER","RWE AG","Action","🇩🇪","Utilities / Énergie Renouvelable","UTIL",0.22,4.0,"RWE.DE"],
+["DHL","Deutsche Post (DHL)","Action","🇩🇪","Industrie / Logistique","IND",0.20,5.0,"DHL.DE"],
+["HENKEL","Henkel AG","Action","🇩🇪","Conso. base / Hygiène","CSTAPLE",0.18,2.5,"HEN3.DE"],
+["PUMA","Puma SE","Action","🇩🇪","Conso. discr. / Sport","CONS",0.28,2.0,"PUM.DE"],
+["ZALANDO","Zalando SE","Action","🇩🇪","Conso. discr. / E-commerce","CONS",0.40,0.0,"ZAL.DE"],
+["FRESENIUS","Fresenius Medical Care","Action","🇩🇪","Santé / Dialyse","HEALTH",0.22,3.0,"FRE.DE"],
+["AIRBUS2","Airbus SE","Action","🇩🇪","Industrie / Aérospatiale","IND",0.22,1.5,"AIR.DE"],
+["VONOVIA","Vonovia SE","Action","🇩🇪","Immobilier / Résidentiel","REIT",0.25,3.5,"VNA.DE"],
+// ── PAYS-BAS ──────────────────────────────────────────────────────────────────
+["HEINEKEN","Heineken NV","Action","🇳🇱","Conso. base / Bière","CSTAPLE",0.18,2.5,"HEIA.AS"],
+["AHOLD","Ahold Delhaize","Action","🇳🇱","Conso. base / Supermarché","CSTAPLE",0.16,4.0,"AD.AS"],
+["WOLTERS","Wolters Kluwer","Action","🇳🇱","IT / Logiciels Juridiques","IT",0.18,1.5,"WKL.AS"],
+["PHILIPS","Philips NV","Action","🇳🇱","Santé / Imagerie Médicale","HEALTH",0.28,1.0,"PHIA.AS"],
+["RANDSTAD","Randstad NV","Action","🇳🇱","Industrie / Intérim","IND",0.22,5.0,"RAND.AS"],
+["ING","ING Groep","Action","🇳🇱","Finance / Banque","FIN",0.22,8.0,"INGA.AS"],
+["AEGON","Aegon NV","Action","🇳🇱","Finance / Assurance","FIN",0.22,4.5,"AGN.AS"],
+// ── ESPAGNE ───────────────────────────────────────────────────────────────────
+["SANTANDER","Banco Santander","Action","🇪🇸","Finance / Banque","FIN",0.25,4.5,"SAN.MC"],
+["BBVA","BBVA","Action","🇪🇸","Finance / Banque","FIN",0.25,4.0,"BBVA.MC"],
+["INDITEX","Inditex (Zara)","Action","🇪🇸","Conso. discr. / Mode","CONS",0.22,2.0,"ITX.MC"],
+["TELEFONICA","Telefónica SA","Action","🇪🇸","Communication / Télécom","COMM",0.20,7.0,"TEF.MC"],
+["IBERDROLA","Iberdrola SA","Action","🇪🇸","Utilities / Renouvelable","UTIL",0.18,4.5,"IBE.MC"],
+["REPSOL","Repsol SA","Action","🇪🇸","Énergie / Pétrole","ENERGY",0.22,7.0,"REP.MC"],
+// ── ITALIE ────────────────────────────────────────────────────────────────────
+["ENI","ENI SpA","Action","🇮🇹","Énergie / Pétrole & Gaz","ENERGY",0.22,6.5,"ENI.MI"],
+["ENEL","Enel SpA","Action","🇮🇹","Utilities / Énergie","UTIL",0.18,7.0,"ENEL.MI"],
+["UNICREDIT","UniCredit SpA","Action","🇮🇹","Finance / Banque","FIN",0.28,5.0,"UCG.MI"],
+["INTESA","Intesa Sanpaolo","Action","🇮🇹","Finance / Banque","FIN",0.25,7.0,"ISP.MI"],
+["FERRARI","Ferrari NV","Action","🇮🇹","Conso. discr. / Supercar","CONS",0.22,0.5,"RACE.MI"],
+["MONCLER","Moncler SpA","Action","🇮🇹","Conso. discr. / Luxe","CONS",0.25,1.5,"MONC.MI"],
+["GENERALI","Assicurazioni Generali","Action","🇮🇹","Finance / Assurance","FIN",0.20,5.5,"G.MI"],
+["LEONARDO","Leonardo SpA","Action","🇮🇹","Industrie / Défense","IND",0.22,2.0,"LDO.MI"],
+// ── SUÈDE ─────────────────────────────────────────────────────────────────────
+["ERICSSON","Ericsson (ADR)","Action","🇸🇪","IT / Télécoms Réseau","IT",0.28,2.5,"ERIC"],
+["VOLVO","AB Volvo (ADR)","Action","🇸🇪","Industrie / Camions","IND",0.22,5.0,"VLVLY"],
+["HM","H&M (ADR)","Action","🇸🇪","Conso. discr. / Mode","CONS",0.25,5.5,"HNNMY"],
+["HEXAGON","Hexagon AB (ADR)","Action","🇸🇪","IT / Mesure & Capteurs","IT",0.24,1.5,"HXGBY"],
+["ATLASCOPCO","Atlas Copco (ADR)","Action","🇸🇪","Industrie / Compresseurs","IND",0.22,2.5,"ATLKY"],
+["SANDVIK","Sandvik AB (ADR)","Action","🇸🇪","Industrie / Outils","IND",0.22,3.0,"SDVKY"],
+// ── DANEMARK ──────────────────────────────────────────────────────────────────
+["NOVONORDISK","Novo Nordisk (ADR)","Action","🇩🇰","Santé / Diabète & Obésité","HEALTH",0.25,1.0,"NVO"],
+["DSMFIR","DSM-Firmenich (ADR)","Action","🇳🇱","Matériaux / Nutrition","MAT",0.20,2.5,"DSFIR.AS"],
+["COLOPLAST","Coloplast (ADR)","Action","🇩🇰","Santé / Soins","HEALTH",0.20,1.5,"CLPBY"],
+// ── SUISSE (complément) ───────────────────────────────────────────────────────
+["LONZA","Lonza Group","Action","🇨🇭","Santé / Pharma CDMO","HEALTH",0.25,1.5,"LONN.SW"],
+["ZURICH","Zurich Insurance Group","Action","🇨🇭","Finance / Assurance","FIN",0.18,5.0,"ZURN.SW"],
+["RICHEMONT","Compagnie Financière Richemont","Action","🇨🇭","Conso. discr. / Luxe (Cartier)","CONS",0.22,1.5,"CFR.SW"],
+["SIKA","Sika AG","Action","🇨🇭","Matériaux / Construction","MAT",0.22,1.0,"SIKA.SW"],
+["GEBERIT","Geberit AG","Action","🇨🇭","Industrie / Sanitaire","IND",0.18,2.5,"GEBN.SW"],
+// ── JAPON (ADR) ───────────────────────────────────────────────────────────────
+["TOYOTA","Toyota Motor (ADR)","Action","🇯🇵","Conso. discr. / Automobile","CONS",0.22,2.5,"TM"],
+["HONDA","Honda Motor (ADR)","Action","🇯🇵","Conso. discr. / Automobile","CONS",0.22,3.0,"HMC"],
+["SONYGRP","Sony Group (ADR)","Action","🇯🇵","IT / Electronics & Gaming","IT",0.22,0.5,"SONY"],
+["NINTENDO","Nintendo (ADR)","Action","🇯🇵","IT / Jeux Vidéo","IT",0.22,2.0,"NTDOY"],
+["SOFTBANK","SoftBank Group (ADR)","Action","🇯🇵","IT / Investissement Tech","IT",0.40,0.5,"SFTBY"],
+["CANON","Canon Inc. (ADR)","Action","🇯🇵","IT / Caméras & Imprimantes","IT",0.18,4.0,"CAJ"],
+["HITACHI","Hitachi (ADR)","Action","🇯🇵","IT / Conglomérat Tech","IT",0.22,1.5,"HTHIY"],
+["NTTJAP","NTT (ADR)","Action","🇯🇵","Communication / Télécom","COMM",0.16,3.5,"NTTYY"],
+["KEYENCEJP","Keyence Corporation (ADR)","Action","🇯🇵","IT / Capteurs Industriels","IT",0.24,0.5,"KYCCF"],
+["MISTUIJP","Mitsui & Co (ADR)","Action","🇯🇵","Industrie / Trading","IND",0.20,3.5,"MITSY"],
+["MITSUBISHI","Mitsubishi Corp (ADR)","Action","🇯🇵","Industrie / Trading","IND",0.20,3.5,"MSBHY"],
+["SUMITOMO","Sumitomo Corp (ADR)","Action","🇯🇵","Industrie / Trading","IND",0.20,3.0,"SSUMY"],
+["TOKIOM","Tokyo Marine Holdings (ADR)","Action","🇯🇵","Finance / Assurance","FIN",0.18,2.5,"TKOMF"],
+// ── CORÉE DU SUD ──────────────────────────────────────────────────────────────
+["SAMSUNG","Samsung Electronics (ADR OTC)","Action","🇰🇷","IT / Semi & Smartphones","IT",0.28,2.5,"SSNLF"],
+["LGELEC","LG Electronics (ADR OTC)","Action","🇰🇷","IT / Électronique","IT",0.25,1.5,"LGELF"],
+["HYUNDAI","Hyundai Motor (ADR OTC)","Action","🇰🇷","Conso. discr. / Automobile","CONS",0.25,2.5,"HYMTF"],
+["SKHYNIX","SK Hynix (ADR OTC)","Action","🇰🇷","IT / Mémoire","IT",0.35,1.5,"HXSCL"],
+["POSCO","POSCO Holdings (ADR)","Action","🇰🇷","Matériaux / Acier","MAT",0.28,3.5,"PKX"],
+["KAKAOCORP","Kakao Corp (ADR OTC)","Action","🇰🇷","IT / Messagerie & Fintech","IT",0.40,0.5,"KAKOF"],
+// ── INDE ──────────────────────────────────────────────────────────────────────
+["WIPRO","Wipro (ADR)","Action","🇮🇳","IT / Services IT","IT",0.26,0.5,"WIT"],
+["HDFC","HDFC Bank (ADR)","Action","🇮🇳","Finance / Banque","FIN",0.22,0.5,"HDB"],
+["ICICI","ICICI Bank (ADR)","Action","🇮🇳","Finance / Banque","FIN",0.25,0.5,"IBN"],
+["TATAMOTORS","Tata Motors (ADR)","Action","🇮🇳","Conso. discr. / Automobile","CONS",0.35,0.0,"TTM"],
+["RELIANCEI","Reliance Industries (ADR OTC)","Action","🇮🇳","Énergie / Conglomérat","ENERGY",0.25,0.5,"RLNIY"],
+// ── BRÉSIL ────────────────────────────────────────────────────────────────────
+["VALE","Vale SA (ADR)","Action","🇧🇷","Matériaux / Minerai de fer","MAT",0.30,8.0,"VALE"],
+["PETROBRAS","Petrobras (ADR)","Action","🇧🇷","Énergie / Pétrole","ENERGY",0.35,15.0,"PBR"],
+["AMBEV","Ambev SA (ADR)","Action","🇧🇷","Conso. base / Bière","CSTAPLE",0.22,6.0,"ABEV"],
+["ITAUSA","Itaú Unibanco (ADR)","Action","🇧🇷","Finance / Banque","FIN",0.28,4.5,"ITUB"],
+["BRADESCO","Banco Bradesco (ADR)","Action","🇧🇷","Finance / Banque","FIN",0.28,5.0,"BBD"],
+["EMBRAER","Embraer SA (ADR)","Action","🇧🇷","Industrie / Aviation","IND",0.35,0.5,"ERJ"],
+// ── CHINE (ADR/HK) ───────────────────────────────────────────────────────────
+["BEKE","KE Holdings (ADR)","Action","🇨🇳","Immobilier / Plateforme","REIT",0.50,0.0,"BEKE"],
+["MEITUAN","Meituan (ADR OTC)","Action","🇨🇳","Conso. discr. / Livraison","CONS",0.45,0.0,"MPNGY"],
+["NETEASE","NetEase (ADR)","Action","🇨🇳","IT / Jeux & Éducation","IT",0.32,2.0,"NTES"],
+["PINGAN","Ping An Insurance (ADR OTC)","Action","🇨🇳","Finance / Assurance","FIN",0.28,4.0,"PNGAY"],
+["CTRIP","Trip.com Group (ADR)","Action","🇨🇳","Conso. discr. / Voyage","CONS",0.38,0.0,"TCOM"],
+["BILIBILI","Bilibili (ADR)","Action","🇨🇳","Communication / Video","COMM",0.55,0.0,"BILI"],
+["IQIYI","iQIYI (ADR)","Action","🇨🇳","Communication / Streaming","COMM",0.55,0.0,"IQ"],
+["ZTO","ZTO Express (ADR)","Action","🇨🇳","Industrie / Livraison","IND",0.30,2.5,"ZTO"],
+["FUTU","Futu Holdings (ADR)","Action","🇭🇰","Finance / Courtage","FIN",0.55,0.0,"FUTU"],
+// ── ETFs SUPPLÉMENTAIRES ─────────────────────────────────────────────────────
+["ICLN","iShares Global Clean Energy","ETF","🇺🇸","Énergie renouvelable","ETF",0.32,1.5,"ICLN"],
+["LIT","Global X Lithium & Battery","ETF","🇺🇸","Lithium & Batteries","ETF",0.35,1.0,"LIT"],
+["COPX","Global X Copper Miners","ETF","🇺🇸","Mines de cuivre","ETF",0.35,2.0,"COPX"],
+["GDX","VanEck Gold Miners","ETF","🇺🇸","Mines d'or","ETF",0.30,1.5,"GDX"],
+["GDXJ","VanEck Junior Gold Miners","ETF","🇺🇸","Petites mines d'or","ETF",0.40,1.0,"GDXJ"],
+["HACK","ETFMG Prime Cybersecurity","ETF","🇺🇸","Cybersécurité","ETF",0.30,0.5,"HACK"],
+["BUG","Global X Cybersecurity","ETF","🇺🇸","Cybersécurité","ETF",0.32,0.0,"BUG"],
+["CIBR","First Trust Cybersecurity","ETF","🇺🇸","Cybersécurité","ETF",0.30,0.3,"CIBR"],
+["ROBO","ROBO Global Robotics","ETF","🇺🇸","Robotique & IA","ETF",0.32,0.0,"ROBO"],
+["ARKW","ARK Next Generation Internet","ETF","🇺🇸","Internet nouvelle génération","ETF",0.55,0.0,"ARKW"],
+["ARKG","ARK Genomic Revolution","ETF","🇺🇸","Génomique","ETF",0.55,0.0,"ARKG"],
+["ARKF","ARK Fintech Innovation","ETF","🇺🇸","Fintech","ETF",0.50,0.0,"ARKF"],
+["MTUM","iShares MSCI Momentum Factor","ETF","🇺🇸","Momentum US","ETF",0.18,0.8,"MTUM"],
+["QUAL","iShares MSCI Quality Factor","ETF","🇺🇸","Qualité US","ETF",0.18,0.8,"QUAL"],
+["USMV","iShares Min Vol USA","ETF","🇺🇸","Faible volatilité US","ETF",0.14,1.5,"USMV"],
+["EMB","iShares JP Morgan EM Bond","ETF","🇺🇸","Obligations Émergents","ETF",0.10,5.0,"EMB"],
+["BNDX","Vanguard Total Intl Bond","ETF","🇺🇸","Obligations Internationales","ETF",0.06,3.5,"BNDX"],
+["TIPS","iShares TIPS Bond","ETF","🇺🇸","Obligations indexées inflation","ETF",0.07,4.0,"TIP"],
+["NOBL","ProShares S&P 500 Div Aristocrats","ETF","🇺🇸","Aristocrates Dividendes","ETF",0.16,2.0,"NOBL"],
+["DGRO","iShares Dividend Growth","ETF","🇺🇸","Croissance dividendes","ETF",0.16,2.5,"DGRO"],
+["SDY","SPDR S&P Dividend","ETF","🇺🇸","Haut dividende S&P","ETF",0.18,2.5,"SDY"],
+["DVY","iShares Select Dividend","ETF","🇺🇸","Dividendes sélectionnés","ETF",0.18,4.5,"DVY"],
+["SDIV","Global X Superdividend","ETF","🇺🇸","Super dividendes mondiaux","ETF",0.22,12.0,"SDIV"],
+["NUSI","Nationwide Risk-Managed Income","ETF","🇺🇸","Revenus couverts","ETF",0.12,7.0,"NUSI"],
+["QYLD","Global X Nasdaq 100 Covered Call","ETF","🇺🇸","Options Nasdaq revenus","ETF",0.18,12.0,"QYLD"],
+["XYLD","Global X S&P 500 Covered Call","ETF","🇺🇸","Options S&P 500 revenus","ETF",0.15,10.0,"XYLD"],
+["RYLD","Global X Russell 2000 Covered Call","ETF","🇺🇸","Options Russell revenus","ETF",0.18,12.0,"RYLD"],
+["BST","BlackRock Science & Tech Trust","ETF","🇺🇸","Tech croissance & revenus","ETF",0.25,6.0,"BST"],
+["XBI","SPDR Biotech","ETF","🇺🇸","Biotechnologie","ETF",0.40,0.3,"XBI"],
+["IBB","iShares Biotechnology","ETF","🇺🇸","Biotechnologie","ETF",0.30,0.5,"IBB"],
+["ARWR","Arrowhead Pharma","Action","🇺🇸","Santé / ARNi Thérapeutique","HEALTH",0.55,0.0,"ARWR"],
+["MRNA2","Moderna follow-on","ETF","🇺🇸","ARNm Santé","ETF",0.40,0.0,"ARKG"],
+["KBWB","Invesco KBW Banking","ETF","🇺🇸","Banques US","ETF",0.25,3.5,"KBWB"],
+["PAVE","Global X U.S. Infrastructure","ETF","🇺🇸","Infrastructure USA","ETF",0.22,0.8,"PAVE"],
+["SPXS","Direxion S&P 500 3x Bear","ETF","🇺🇸","Inverse S&P 500 3x (RISQUE)","ETF",0.90,0.0,"SPXS"],
+["TQQQ","ProShares UltraPro QQQ 3x","ETF","🇺🇸","Nasdaq-100 3x (RISQUE)","ETF",0.75,0.0,"TQQQ"],
+["SQQQ","ProShares UltraPro Short QQQ","ETF","🇺🇸","Inverse Nasdaq 3x (RISQUE)","ETF",0.80,0.0,"SQQQ"],
+["SSO","ProShares Ultra S&P500 2x","ETF","🇺🇸","S&P 500 2x (RISQUE)","ETF",0.40,0.3,"SSO"],
+["UPRO","ProShares UltraPro S&P500 3x","ETF","🇺🇸","S&P 500 3x (RISQUE)","ETF",0.65,0.0,"UPRO"],
+["TMF","Direxion 20yr Treasury Bull 3x","ETF","🇺🇸","Obligations LT 3x (RISQUE)","ETF",0.50,2.0,"TMF"],
+["UVXY","ProShares Ultra VIX","ETF","🇺🇸","Volatilité 1.5x (TRÈS RISQUE)","ETF",0.95,0.0,"UVXY"],
+["VXX","iPath Series B VIX","ETF","🇺🇸","Volatilité Court Terme","ETF",0.85,0.0,"VXX"],
+// ── ETFs EUROPE ───────────────────────────────────────────────────────────────
+["IUIT","iShares S&P500 IT Sector","ETF","🇮🇪","Tech US ETF Europe","ETF",0.25,0.5,"IUIT.L"],
+["IUFS","iShares S&P500 Financials","ETF","🇮🇪","Finance US ETF Europe","ETF",0.20,2.0,"IUFS.L"],
+["IUHC","iShares S&P500 Healthcare","ETF","🇮🇪","Santé US ETF Europe","ETF",0.18,1.5,"IUHC.L"],
+["MVOL","iShares Edge MSCI World Min Vol","ETF","🇮🇪","Monde faible volatilité","ETF",0.13,2.0,"MVOL.DE"],
+["IEMB","iShares J.P.Morgan EM Bond EUR","ETF","🇮🇪","Obligations Émergents EUR","ETF",0.10,5.0,"IEMB.DE"],
+["VUSA","Vanguard S&P 500 ETF (EUR)","ETF","🇮🇪","S&P 500 en euros","ETF",0.15,1.3,"VUSA.AS"],
+["VUAA","Vanguard S&P 500 Acc (EUR)","ETF","🇮🇪","S&P 500 Acc en euros","ETF",0.15,0.0,"VUAA.AS"],
+["VWRL","Vanguard FTSE All-World (USD)","ETF","🇮🇪","Monde toutes capitalisations","ETF",0.15,1.8,"VWRL.AS"],
+["VNRT","Vanguard FTSE North America","ETF","🇮🇪","Amérique du Nord","ETF",0.16,1.3,"VNRT.AS"],
+["VFEM","Vanguard FTSE Emerging Markets","ETF","🇮🇪","Marchés Émergents Vanguard","ETF",0.18,2.5,"VFEM.AS"],
+["VAGF","Vanguard Global Aggregate Bond","ETF","🇮🇪","Obligations Mondiales","ETF",0.08,3.0,"VAGF.AS"],
+["XAIX","Xtrackers AI & Big Data","ETF","🇮🇪","IA & Big Data","ETF",0.28,0.0,"XAIX.DE"],
+["RBOT","iShares Automation & Robotics","ETF","🇮🇪","Robotique & Automatisation","ETF",0.28,0.3,"RBOT.L"],
+["ESPO","VanEck Video Gaming & Esports","ETF","🇺🇸","E-sports & Jeux Vidéo","ETF",0.30,0.3,"ESPO"],
+["CLMA","iShares Climate Conscious MSCI","ETF","🇮🇪","ESG Monde Climat","ETF",0.14,1.0,"CLMA.L"],
+["LYXCAC","Lyxor CAC 40 (EUR)","ETF","🇫🇷","CAC 40 - Éligible PEA","ETF",0.18,2.5,"CAC.PA"],
+["CDAX","Lyxor DAX (EUR)","ETF","🇩🇪","DAX Allemagne","ETF",0.18,2.0,"LYX0AB.DE"],
+["ISF","iShares Core FTSE 100","ETF","🇬🇧","FTSE 100 UK","ETF",0.18,3.5,"ISF.L"],
+// ── CRYPTOS EN BOURSE ─────────────────────────────────────────────────────────
+["ETHA","iShares Ethereum Trust","ETF","🇺🇸","Ethereum","ETF",0.75,0.0,"ETHA"],
+["ETHW","Bitwise Ethereum ETF","ETF","🇺🇸","Ethereum Bitwise","ETF",0.75,0.0,"ETHW"],
+["GBTC","Grayscale Bitcoin Trust","ETF","🇺🇸","Bitcoin Grayscale","ETF",0.65,0.0,"GBTC"],
+["HODL","VanEck Bitcoin ETF","ETF","🇺🇸","Bitcoin VanEck","ETF",0.65,0.0,"HODL"],
+["BITB","Bitwise Bitcoin ETF","ETF","🇺🇸","Bitcoin Bitwise","ETF",0.65,0.0,"BITB"],
+["BITU","ProShares Bitcoin 2x ETF","ETF","🇺🇸","Bitcoin 2x (RISQUE)","ETF",0.90,0.0,"BITU"],
+// ── AUTRES ACTIFS NOTABLES ────────────────────────────────────────────────────
+["MELI","MercadoLibre","Action","🇦🇷","Conso. discr. / E-commerce Latam","CONS",0.40,0.0,"MELI"],
+["GRAB","Grab Holdings","Action","🇸🇬","IT / Super-app Asie SE","IT",0.55,0.0,"GRAB"],
+["GOOG","Alphabet Inc. (Classe C)","Action","🇺🇸","Communication / IA & Search","COMM",0.26,0.5,"GOOG"],
+["MSFT2","Microsoft Azure Focus","Action","🇺🇸","IT / Cloud Enterprise","IT",0.24,0.7,"MSFT"],
+["NVDA2","NVIDIA (H-Series AI)","Action","🇺🇸","IT / GPU IA","IT",0.48,0.1,"NVDA"],
+["ZM","Zoom Video Communications","Action","🇺🇸","IT / Visioconférence","IT",0.40,0.0,"ZM"],
+["DOCN","DigitalOcean Holdings","Action","🇺🇸","IT / Cloud PME","IT",0.55,0.0,"DOCN"],
+["CELH","Celsius Holdings","Action","🇺🇸","Conso. base / Boissons Energy","CSTAPLE",0.50,0.0,"CELH"],
+["MNST","Monster Beverage","Action","🇺🇸","Conso. base / Boissons Energy","CSTAPLE",0.25,0.0,"MNST"],
+["RACE","Ferrari NV (US)","Action","🇮🇹","Conso. discr. / Supercar","CONS",0.22,0.5,"RACE"],
+["VIST","Vista Energy","Action","🇲🇽","Énergie / E&P Argentine","ENERGY",0.40,0.5,"VIST"],
+["CEG","Constellation Energy","Action","🇺🇸","Énergie / Nucléaire","ENERGY",0.30,0.5,"CEG"],
+["VST","Vistra Energy","Action","🇺🇸","Utilities / Énergie & IA","UTIL",0.40,0.5,"VST"],
+["NRG","NRG Energy","Action","🇺🇸","Utilities / Énergie","UTIL",0.30,2.0,"NRG"],
+["ELF","e.l.f. Beauty","Action","🇺🇸","Conso. base / Cosmétiques","CSTAPLE",0.40,0.0,"ELF"],
+["AXTA","Axalta Coating Systems","Action","🇺🇸","Matériaux / Peintures Auto","MAT",0.25,0.0,"AXTA"],
+["GXO","GXO Logistics","Action","🇺🇸","Industrie / Logistique 3PL","IND",0.30,0.0,"GXO"],
+["RXO","RXO Inc.","Action","🇺🇸","Industrie / Transport","IND",0.35,0.0,"RXO"],
+["SPSC","SPS Commerce","Action","🇺🇸","IT / Supply Chain","IT",0.35,0.0,"SPSC"],
+["ALAB","Astera Labs","Action","🇺🇸","IT / Semi IA Connectivity","IT",0.60,0.0,"ALAB"],
+["AVAV","AeroVironment","Action","🇺🇸","Industrie / Drones Défense","IND",0.40,0.0,"AVAV"],
+["JOBY","Joby Aviation","Action","🇺🇸","Industrie / Air Taxi","IND",0.70,0.0,"JOBY"],
+["ACHR","Archer Aviation","Action","🇺🇸","Industrie / Air Taxi","IND",0.75,0.0,"ACHR"],
+["LUNR","Intuitive Machines","Action","🇺🇸","Industrie / Lune","IND",0.80,0.0,"LUNR"],
+["RKLB","Rocket Lab USA","Action","🇺🇸","Industrie / Lanceurs spatiaux","IND",0.75,0.0,"RKLB"],
+["SPCE","Virgin Galactic","Action","🇺🇸","Industrie / Tourisme spatial","IND",0.90,0.0,"SPCE"],
+["ASTS","AST SpaceMobile","Action","🇺🇸","Communication / Satellite 5G","COMM",0.80,0.0,"ASTS"],
+["SATS","EchoStar Corporation","Action","🇺🇸","Communication / Satellite","COMM",0.40,0.0,"SATS"],
+["RHI","Robert Half","Action","🇺🇸","Industrie / Intérim","IND",0.25,3.5,"RHI"],
+["MAN","ManpowerGroup","Action","🇺🇸","Industrie / Intérim","IND",0.22,4.0,"MAN"],
+["UPWK","Upwork","Action","🇺🇸","IT / Freelance Plateforme","IT",0.55,0.0,"UPWK"],
+["FIVERR","Fiverr International","Action","🇮🇱","IT / Freelance Plateforme","IT",0.55,0.0,"FVRR"],
+].forEach(([t,n,tp,cf,s,sc,vol,div,...rest])=>{
+  if(DB.find(d=>d.t===t))return;
+  const yf=rest[0]||t;
+  DB.push({t,n,yf,tp,c:C2[cf]||"US",cf,r:R2[cf]||"US",s,sc,vol,div,P:[{n:cf+" "+(C2[cf]||"US"),p:100}],S:[{n:SC[sc]||sc,p:100}]});
+});
+})();
+[{n:"🇺🇸 US",p:61.63},{n:"🇯🇵 JP",p:5.39},{n:"🇬🇧 UK",p:3.45},{n:"🇨🇳 CN",p:3.09},{n:"🇨🇦 CA",p:2.98},{n:"🇫🇷 FR",p:2.20},{n:"🇹🇼 TW",p:2.10},{n:"🇩🇪 DE",p:2.00},{n:"🇮🇳 IN",p:1.80},{n:"🇰🇷 KR",p:1.60},{n:"🌐 Autres",p:13.76}];
 const EM_P=[{n:"🇨🇳 CN",p:33.16},{n:"🇹🇼 TW",p:26.24},{n:"🇰🇷 KR",p:19.52},{n:"🇮🇳 IN",p:16.65},{n:"🇲🇾 MY",p:1.48},{n:"🌐 Autres",p:2.95}];
 const CLRS=["#f59e0b","#6366f1","#10b981","#ef4444","#3b82f6","#a855f7","#06b6d4","#f97316","#84cc16","#ec4899","#14b8a6","#8b5cf6","#fb923c","#22d3ee","#4ade80","#f472b6"];
 const fmt=n=>n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -1484,6 +2040,7 @@ async function initApp(){
   setProvider(savedProvider);
   await loadXP();
   await loadPositions();
+  loadExtDB(); // chargement DB étendue en arrière-plan (non bloquant)
   await takeDailySnapshot();
   await renderOverview();
   renderPatri();
@@ -2196,7 +2753,15 @@ async function resetAll(){
 // SEARCH / ADD / EDIT
 // ═══════════════════════════════════════════════════════
 const FMAP={IT:["IT"],FIN:["FIN"],HEALTH:["HEALTH"],ENERGY:["ENERGY","CMDTY"]};
-function openSearch(){document.getElementById("search-overlay").classList.add("open");document.getElementById("s-input").value="";document.getElementById("add-form").style.display="none";selAsset=null;doSearch("");setTimeout(()=>document.getElementById("s-input").focus(),100);}
+function openSearch(){
+  loadExtDB(); // s'assurer que la DB est chargée
+  document.getElementById("search-overlay").classList.add("open");
+  document.getElementById("s-input").value="";
+  document.getElementById("add-form").style.display="none";
+  selAsset=null;
+  doSearch("");
+  setTimeout(()=>document.getElementById("s-input").focus(),100);
+}
 function closeSearch(){document.getElementById("search-overlay").classList.remove("open");}
 function setFilter(f,btn){curFilter=f;document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));btn.classList.add("on");doSearch(document.getElementById("s-input").value);}
 // Cache des actifs fetchés dynamiquement
@@ -2277,6 +2842,26 @@ async function searchYahoo(q){
 // PRIX TEMPS RÉEL — Cloudflare Worker
 // ═══════════════════════════════════════════════════════
 const WORKER_URL = "https://gestionary-prices.noo-longoni.workers.dev";
+const DB_URL = "https://raw.githubusercontent.com/Nologa8/Capital/main/db.json";
+let dbLoaded = false;
+
+async function loadExtDB(){
+  if(dbLoaded) return;
+  try{
+    const r = await fetch(DB_URL);
+    if(!r.ok) return;
+    const ext = await r.json();
+    let added = 0;
+    ext.forEach(a => {
+      if(!DB.find(d => d.t === a.t)){
+        DB.push(a);
+        added++;
+      }
+    });
+    dbLoaded = true;
+    console.log(`DB étendue : +${added} actifs → total ${DB.length}`);
+  }catch(e){ console.warn("loadExtDB:", e); }
+}
 let priceCache = {};
 
 async function fetchPrices(tickers) {
@@ -2340,13 +2925,18 @@ async function refreshPrices() {
 }
 
 async function fetchSearchPrices(tickers) {
-  const prices = await fetchPrices(tickers.slice(0, 15));
-  for(const [t, p] of Object.entries(prices)) {
-    const el = document.getElementById("rp-" + t);
-    if(!el) continue;
-    const cur = p.currency === "EUR" ? "€" : p.currency === "USD" ? "$" : p.currency;
-    const chg = p.change >= 0 ? `+${p.change}%` : `${p.change}%`;
-    el.innerHTML = `${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur} <span style="font-size:9px;color:${p.change>=0?"var(--gn)":"var(--rd)"}">${chg}</span>`;
+  const unique = [...new Set(tickers)].filter(Boolean);
+  const batches = [];
+  for(let i=0; i<unique.length; i+=50) batches.push(unique.slice(i,i+50));
+  for(const batch of batches){
+    const prices = await fetchPrices(batch);
+    for(const [t, p] of Object.entries(prices)) {
+      const el = document.getElementById("rp-" + t);
+      if(!el) continue;
+      const cur = p.currency === "EUR" ? "€" : p.currency === "USD" ? "$" : p.currency;
+      const chg = p.change >= 0 ? `+${p.change}%` : `${p.change}%`;
+      el.innerHTML = `${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur} <span style="font-size:9px;color:${p.change>=0?"var(--gn)":"var(--rd)"}">${chg}</span>`;
+    }
   }
 }
 function getA(ticker){
