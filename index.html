@@ -1287,7 +1287,7 @@ let cryptoPrices={}, selAsset=null, curFilter="ALL", editId=null, wiSelAsset=nul
 // ═══════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════
-const getA=t=>DB.find(d=>d.t===t)||null;
+// getA defined later with dynamic asset support
 const totV=()=>positions.reduce((s,p)=>s+p.current_value,0);
 const totI=()=>positions.reduce((s,p)=>s+p.invested,0);
 const getPays=pos=>{const a=getA(pos.ticker);return a?a.P:[{n:pos.name||pos.ticker,p:100}];};
@@ -2161,31 +2161,78 @@ const FMAP={IT:["IT"],FIN:["FIN"],HEALTH:["HEALTH"],ENERGY:["ENERGY","CMDTY"]};
 function openSearch(){document.getElementById("search-overlay").classList.add("open");document.getElementById("s-input").value="";document.getElementById("add-form").style.display="none";selAsset=null;doSearch("");setTimeout(()=>document.getElementById("s-input").focus(),100);}
 function closeSearch(){document.getElementById("search-overlay").classList.remove("open");}
 function setFilter(f,btn){curFilter=f;document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));btn.classList.add("on");doSearch(document.getElementById("s-input").value);}
+// Cache des actifs fetchés dynamiquement
+const dynamicAssets = {};
+
 function doSearch(q){
   const q2=q.toLowerCase().trim();
+  // Résultats DB locale
   let res=DB.filter(d=>{
-    const mQ=!q2||d.t.toLowerCase().includes(q2)||d.n.toLowerCase().includes(q2)||d.c.toLowerCase().includes(q2)||d.s.toLowerCase().includes(q2)||d.cf.includes(q2);
+    const mQ=!q2||d.t.toLowerCase().includes(q2)||d.n.toLowerCase().includes(q2)||d.c?.toLowerCase().includes(q2)||d.s.toLowerCase().includes(q2)||d.cf?.includes(q2);
     let mF=true;if(curFilter==="ETF")mF=d.tp==="ETF"||d.tp==="ETC";else if(["US","EU","ASIA"].includes(curFilter))mF=d.r===curFilter;else if(FMAP[curFilter])mF=FMAP[curFilter].includes(d.sc);
     return mQ&&mF;
-  }).slice(0,30);
+  }).slice(0,20);
+
   const el=document.getElementById("s-results");
-  if(!res.length){el.innerHTML=`<div class="no-data">Aucun résultat pour "${q}"</div>`;return;}
   const TYPE_COLOR={ETF:"color:var(--am)",ETC:"color:var(--am)",Action:"color:var(--bl)",Crypto:"color:var(--pu2)"};
-  el.innerHTML=res.map(d=>{
-    const geo=d.r==="US"?"🇺🇸":d.r==="EU"?"🇪🇺":d.r==="ASIA"?"🌏":"🌍";
-    const tc=TYPE_COLOR[d.tp]||"color:var(--t2)";
-    return `<div class="res" onclick="selA('${d.t}')">
-      <span class="r-t">${d.t}</span>
-      <div class="r-i">
-        <div class="r-n">${d.n}</div>
-        <div class="r-m">${geo} ${d.s}</div>
-      </div>
-      <span class="r-badge" style="${tc}">${d.tp}</span>
-      <span class="r-price" id="rp-${d.t}">—</span>
-    </div>`;
-  }).join("");
-  // Fetch prices async
-  fetchSearchPrices(res.map(d=>d.t));
+
+  const renderRes=(list,extra=[])=>{
+    const all=[...list,...extra];
+    if(!all.length){el.innerHTML=`<div class="no-data">Aucun résultat pour "${q}"</div>`;return;}
+    el.innerHTML=all.map(d=>{
+      const geo=d.r==="US"?"🇺🇸":d.r==="EU"?"🇪🇺":d.r==="ASIA"?"🌏":"🌍";
+      const tc=TYPE_COLOR[d.tp]||"color:var(--t2)";
+      const isDyn=!DB.find(x=>x.t===d.t);
+      return `<div class="res" onclick="selA('${d.t}')">
+        <span class="r-t">${d.t}</span>
+        <div class="r-i">
+          <div class="r-n">${d.n}${isDyn?` <span style="font-size:9px;color:var(--t3);font-family:var(--M)">Yahoo</span>`:""}</div>
+          <div class="r-m">${geo} ${d.s||d.exchange||"—"}</div>
+        </div>
+        <span class="r-badge" style="${tc}">${d.tp}</span>
+        <span class="r-price" id="rp-${d.t}">—</span>
+      </div>`;
+    }).join("");
+    fetchSearchPrices(all.map(d=>d.t));
+  };
+
+  renderRes(res);
+
+  // Cherche aussi sur Yahoo si la query est assez spécifique
+  if(q2.length>=2 && curFilter==="Tout"){
+    searchYahoo(q2).then(yahooRes=>{
+      // Filtrer les doublons avec la DB
+      const extra=yahooRes.filter(y=>!DB.find(d=>d.t===y.t));
+      if(extra.length) renderRes(res, extra);
+    });
+  }
+}
+
+async function searchYahoo(q){
+  try{
+    const r=await fetch(`${WORKER_URL}/search?q=${encodeURIComponent(q)}`);
+    if(!r.ok) return [];
+    const data=await r.json();
+    if(!Array.isArray(data)) return [];
+    return data.map(item=>{
+      // Construire un objet compatible avec notre DB
+      const countryFlag={"United States":"🇺🇸","France":"🇫🇷","Germany":"🇩🇪","United Kingdom":"🇬🇧","Switzerland":"🇨🇭","Japan":"🇯🇵","China":"🇨🇳","Taiwan":"🇹🇼","South Korea":"🇰🇷","Canada":"🇨🇦","Australia":"🇦🇺","Netherlands":"🇳🇱","Spain":"🇪🇸","Italy":"🇮🇹","India":"🇮🇳","Brazil":"🇧🇷","Singapore":"🇸🇬"};
+      const regionMap={"United States":"US","France":"EU","Germany":"EU","United Kingdom":"EU","Switzerland":"EU","Netherlands":"EU","Spain":"EU","Italy":"EU","Japan":"ASIA","China":"ASIA","Taiwan":"ASIA","South Korea":"ASIA","India":"ASIA","Australia":"ASIA","Singapore":"ASIA","Canada":"US"};
+      const cf=countryFlag[item.country]||"🌍";
+      const r=regionMap[item.country]||"US";
+      const obj={
+        t:item.ticker, n:item.name, tp:item.type||"Action",
+        cf, r, c:item.country||"US",
+        s:item.exchange||"", sc:"IT", vol:0.25, div:0,
+        P:[{n:cf+" "+(item.country||"US"),p:100}],
+        S:[{n:"—",p:100}],
+        _dynamic:true
+      };
+      // Stocker dans le cache
+      dynamicAssets[item.ticker]=obj;
+      return obj;
+    });
+  }catch{return [];}
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2254,13 +2301,64 @@ async function fetchSearchPrices(tickers) {
     el.innerHTML = `${p.price.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})}${cur} <span style="font-size:9px;color:${p.change>=0?"var(--gn)":"var(--rd)"}">${chg}</span>`;
   }
 }
-function selA(t){
-  selAsset=DB.find(d=>d.t===t);if(!selAsset)return;
+function getA(ticker){
+  return DB.find(d=>d.t===ticker) || dynamicAssets[ticker] || null;
+}
+
+async function selA(t){
+  // Cherche d'abord dans DB, puis dans le cache dynamique
+  let asset = DB.find(d=>d.t===t) || dynamicAssets[t];
+  if(!asset){
+    // Créer un asset minimal et enrichir via Worker
+    asset={t,n:t,tp:"Action",cf:"🌍",r:"US",c:"US",s:"Chargement…",sc:"IT",vol:0.25,div:0,P:[{n:"🌍 US",p:100}],S:[{n:"—",p:100}],_dynamic:true};
+    dynamicAssets[t]=asset;
+  }
+  selAsset=asset;
   document.getElementById("add-form").style.display="block";
-  document.getElementById("sel-ticker").textContent=selAsset.t;
-  document.getElementById("sel-name").textContent=selAsset.cf+" "+selAsset.n;
-  document.getElementById("sel-meta").textContent=selAsset.tp+" · "+selAsset.c+" · "+selAsset.s;
+  document.getElementById("sel-ticker").textContent=asset.t;
+  document.getElementById("sel-name").textContent=(asset.cf||"🌍")+" "+asset.n;
+  document.getElementById("sel-meta").textContent=asset.tp+" · "+(asset.c||"—")+" · "+(asset.s||"—");
   ["f-val","f-inv","f-shares","f-avg"].forEach(id=>document.getElementById(id).value="");
+
+  // Si actif dynamique → enrichir via Worker /quote
+  if(asset._dynamic){
+    enrichAsset(t);
+  }
+}
+
+async function enrichAsset(ticker){
+  try{
+    const r=await fetch(`${WORKER_URL}/quote?ticker=${encodeURIComponent(ticker)}`);
+    if(!r.ok) return;
+    const data=await r.json();
+    if(data.error) return;
+
+    const countryFlag={"United States":"🇺🇸","France":"🇫🇷","Germany":"🇩🇪","United Kingdom":"🇬🇧","Switzerland":"🇨🇭","Japan":"🇯🇵","China":"🇨🇳","Taiwan":"🇹🇼","South Korea":"🇰🇷","Canada":"🇨🇦","Australia":"🇦🇺","Netherlands":"🇳🇱","Spain":"🇪🇸","Italy":"🇮🇹","India":"🇮🇳","Brazil":"🇧🇷","Singapore":"🇸🇬"};
+    const regionMap={"United States":"US","France":"EU","Germany":"EU","United Kingdom":"EU","Switzerland":"EU","Netherlands":"EU","Spain":"EU","Italy":"EU","Japan":"ASIA","China":"ASIA","Taiwan":"ASIA","South Korea":"ASIA","India":"ASIA","Australia":"ASIA","Singapore":"ASIA","Canada":"US"};
+    const sectorMap={"Technology":"IT","Financial Services":"Finance","Healthcare":"Santé","Consumer Cyclical":"Conso. discr.","Consumer Defensive":"Conso. base","Industrials":"Industrie","Energy":"Énergie","Basic Materials":"Matériaux","Communication Services":"Communication","Real Estate":"Immobilier","Utilities":"Utilities"};
+
+    const cf=countryFlag[data.country]||"🌍";
+    const region=regionMap[data.country]||"US";
+    const sector=sectorMap[data.sector]||data.sector||"—";
+
+    const enriched={
+      ...dynamicAssets[ticker],
+      n:data.name||ticker,
+      cf, r:region, c:data.country||"US",
+      s:data.industry||sector,
+      sc:data.sector==="Technology"?"IT":data.sector==="Financial Services"?"FIN":"IT",
+      P:[{n:cf+" "+(data.country||"US"),p:100}],
+      S:[{n:sector,p:100}],
+    };
+    dynamicAssets[ticker]=enriched;
+
+    // Si c'est l'actif actuellement sélectionné, met à jour l'UI
+    if(selAsset&&selAsset.t===ticker){
+      selAsset=enriched;
+      document.getElementById("sel-name").textContent=cf+" "+enriched.n;
+      document.getElementById("sel-meta").textContent=enriched.tp+" · "+(enriched.c||"—")+" · "+(enriched.s||"—");
+    }
+  }catch{}
 }
 function cancelSel(){selAsset=null;document.getElementById("add-form").style.display="none";}
 async function confirmAdd(){
