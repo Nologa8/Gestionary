@@ -224,9 +224,11 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .bars{display:flex;flex-direction:column;gap:8px;}
 .bar-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;}
 .bar-lbl{font-size:11px;font-weight:500;}
-.bar-pct{font-family:var(--M);font-size:10px;color:var(--t3);}
+.bar-pct{font-family:var(--M);font-size:10px;color:var(--t3);flex-shrink:0;margin-left:8px;}
 .bar-tr{height:2px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;}
 .bar-fi{height:100%;border-radius:2px;transition:width 0.8s ease;}
+.bar-track{height:4px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-top:1px;}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.9s cubic-bezier(0.4,0,0.2,1);}
 
 /* ─── DONUT ─────────────────────────────────────────── */
 .donut-wrap{display:flex;gap:16px;align-items:center;}
@@ -747,13 +749,31 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 
 <!-- PROGRESSION -->
 <div class="page wrap" id="page-progression">
-  <div class="sh"><div class="sh-title">Rangs & Défis</div></div>
+  <div class="sh"><div class="sh-title">Progression</div></div>
+
+  <!-- Rang actuel hero -->
   <div class="rank-hero" id="rank-hero"></div>
-  <div class="g2 mb">
-    <div class="card"><div class="ct">Tous les rangs</div><div class="ranks-grid" id="ranks-grid"></div></div>
-    <div class="card"><div class="ct">Défis du mois</div><div class="defis" id="defis-list"></div></div>
+
+  <!-- Stats rapides -->
+  <div class="g4 mb" id="prog-stats"></div>
+
+  <!-- Quêtes actives -->
+  <div class="card mb">
+    <div class="ct">⚔️ Quêtes actives <span class="tag tag-pu" id="quetes-progress">—</span></div>
+    <div class="defis" id="defis-list"></div>
   </div>
-  <div class="card"><div class="ct">Éducation financière</div><div class="lessons-grid" id="lessons-grid"></div></div>
+
+  <!-- Tous les rangs + Éducation -->
+  <div class="g2 mb">
+    <div class="card">
+      <div class="ct">🏆 Tous les rangs</div>
+      <div class="ranks-grid" id="ranks-grid"></div>
+    </div>
+    <div class="card">
+      <div class="ct">📚 Éducation financière</div>
+      <div class="lessons-grid" id="lessons-grid"></div>
+    </div>
+  </div>
 </div>
 
 <!-- CONSEILLER IA -->
@@ -1044,22 +1064,21 @@ async function openDB(){ return true; } // kept for compatibility
 // GAMIFICATION
 // ═══════════════════════════════════════════════════════
 const RANKS=[
-  {id:"novice",icon:"🪨",name:"Novice",xp:0,desc:"Bienvenue dans CAPITAL"},
-  {id:"epargnant",icon:"🌱",name:"Épargnant",xp:500,desc:"Fonds de précaution constitué"},
-  {id:"investisseur",icon:"📈",name:"Investisseur",xp:1500,desc:"DCA régulier en place"},
-  {id:"stratege",icon:"⚖️",name:"Stratège",xp:3000,desc:"Rebalancing maîtrisé"},
-  {id:"patrimonial",icon:"🏛️",name:"Patrimonial",xp:6000,desc:"Multi-classes d'actifs"},
-  {id:"gestionnaire",icon:"🧠",name:"Gestionnaire",xp:10000,desc:"Score santé > 75/100"},
-  {id:"expert",icon:"💎",name:"Expert",xp:18000,desc:"Objectif de capital atteint"},
-  {id:"maitre",icon:"👑",name:"Maître",xp:30000,desc:"Tout accompli"},
+  {id:"bronze",   icon:"🥉",name:"Bronze",   xp:0,    desc:"Premier pas dans le monde de l'investissement"},
+  {id:"argent",   icon:"🥈",name:"Argent",   xp:500,  desc:"Fonds de précaution constitué"},
+  {id:"or",       icon:"🥇",name:"Or",       xp:1500, desc:"DCA régulier en place"},
+  {id:"platine",  icon:"💎",name:"Platine",  xp:3500, desc:"Rebalancing maîtrisé"},
+  {id:"diamant",  icon:"💠",name:"Diamant",  xp:7500, desc:"Multi-classes d'actifs diversifiées"},
+  {id:"maitre",   icon:"👑",name:"Maître",   xp:15000,desc:"Score santé > 80/100"},
+  {id:"legende",  icon:"⚡",name:"Légende",  xp:30000,desc:"Indépendance financière en vue"},
 ];
 const LESSONS=[
-  {id:"fond-precaution",title:"Le fonds de précaution",icon:"🛡️",rank:"epargnant",desc:"Pourquoi c'est la base de tout",content:`<h3>Pourquoi le fonds de précaution est indispensable</h3><p>Avant d'investir un seul euro en bourse, tu dois avoir un <strong>fonds de précaution</strong> : une réserve d'argent liquide équivalant à 3 à 6 mois de tes charges fixes.</p><p>Pourquoi ? Parce que si tu as une dépense imprévue (voiture en panne, chômage, santé), tu seras forcé de vendre tes investissements — parfois au pire moment, en plein krach.</p><div class="highlight">💡 Règle : Livret A + LDDS avant tout. Remplis-les avant d'investir en bourse.</div><h3>Combien exactement ?</h3><ul><li>Additionne tes charges fixes mensuelles (loyer, charges, abonnements, nourriture estimée)</li><li>Multiplie par 3 (minimum) ou par 6 (idéal)</li><li>Place cette somme sur Livret A et/ou LDDS — jamais en bourse</li></ul><h3>Une fois constitué</h3><p>Une fois ton fonds de précaution en place, tu peux investir sereinement — tu sais que tu ne seras jamais forcé de vendre en urgence. C'est le fondement psychologique de l'investisseur calme.</p>`},
-  {id:"dca",title:"Le DCA — Dollar Cost Averaging",icon:"📅",rank:"investisseur",desc:"La stratégie qui bat 95% des traders",content:`<h3>C'est quoi le DCA ?</h3><p>Le <strong>Dollar Cost Averaging</strong> (DCA) consiste à investir un montant fixe à intervalles réguliers — par exemple 300€ tous les premiers du mois — peu importe ce que fait le marché.</p><div class="highlight">💡 Tu achètes plus de parts quand les prix sont bas, moins quand ils sont hauts — automatiquement.</div><h3>Pourquoi ça marche</h3><ul><li>Élimine le market timing (personne ne peut prévoir les marchés)</li><li>Réduit l'impact de la volatilité sur ton prix moyen d'achat</li><li>Crée une discipline d'investissement automatique</li><li>Réduit le stress psychologique — tu n'attends plus "le bon moment"</li></ul><h3>Exemple concret</h3><p>Tu investis 300€/mois sur ACWI pendant 10 ans à 8%/an de rendement moyen : tu arrives à environ <strong>55 000 €</strong> pour 36 000 € investis — soit +53% de gains composés.</p><h3>Comment faire avec Trade Republic</h3><p>Trade Republic propose des plans d'investissement automatiques (Sparplan) — tu configures une fois, ça tourne tout seul. C'est le DCA parfait.</p>`},
-  {id:"rebalancing",title:"Le rebalancing",icon:"⚖️",rank:"stratege",desc:"Acheter bas, vendre haut automatiquement",content:`<h3>Qu'est-ce que le rebalancing ?</h3><p>Avec le temps, tes positions évoluent différemment. Si NVDA monte de 40%, elle représente maintenant 25% de ton portfolio au lieu des 10% visés. Tu es surexposé sans l'avoir décidé.</p><p>Le <strong>rebalancing</strong> consiste à revenir périodiquement (tous les 6-12 mois) à ton allocation cible en vendant ce qui a trop monté et achetant ce qui est sous-pondéré.</p><div class="highlight">💡 Mathématiquement, le rebalancing force à "acheter bas, vendre haut" — c'est contre-intuitif mais efficace.</div><h3>Comment faire avec CAPITAL</h3><p>L'onglet <strong>Rebalancing</strong> calcule automatiquement les écarts vs tes cibles et te dit exactement quoi acheter/vendre en euros.</p><h3>Fréquence recommandée</h3><ul><li>1 fois par an minimum</li><li>Ou quand un actif dépasse +5% de son poids cible</li><li>Idéalement lors de ton DCA mensuel — investis d'abord dans les sous-pondérés</li></ul>`},
-  {id:"diversification",title:"La diversification",icon:"🌍",rank:"patrimonial",desc:"Ne pas mettre tous ses œufs dans le même panier",content:`<h3>Pourquoi diversifier ?</h3><p>La diversification réduit le <strong>risque spécifique</strong> (risque lié à un actif particulier) sans nécessairement réduire le rendement.</p><p>Un portefeuille 100% NVDA peut doubler — mais peut aussi perdre 70% en un an. Un portefeuille 60% ACWI + 20% EM Asia + 10% Or + 10% Obligations limitera les drawdowns extrêmes.</p><div class="highlight">💡 Harry Markowitz (Prix Nobel d'économie) : "La diversification est le seul repas gratuit en finance."</div><h3>Les niveaux de diversification</h3><ul><li><strong>Actifs</strong> : plusieurs positions, pas une seule</li><li><strong>Géographique</strong> : US, Europe, Émergents, Asie</li><li><strong>Sectorielle</strong> : Tech, Finance, Santé, Énergie...</li><li><strong>Classes d'actifs</strong> : Actions + Or + Obligations + Immo</li></ul><h3>Attention : diversification ≠ dilution</h3><p>Avoir 50 ETFs différents qui font tous la même chose (S&P500) n'est pas de la diversification. ACWI + EM Asia + Or + Obligations — 4 actifs, vraie diversification.</p>`},
-  {id:"fiscalite",title:"Fiscalité française de l'investissement",icon:"🏦",rank:"gestionnaire",desc:"PEA, CTO, PFU — comment payer moins d'impôts légalement",content:`<h3>Le PFU (Flat Tax) — 30%</h3><p>En France, les gains sur investissements (plus-values + dividendes) sont taxés à <strong>30% flat</strong> (17.2% prélèvements sociaux + 12.8% IR) — sauf si tu es dans une tranche marginale basse.</p><div class="highlight">💡 Le PEA est ton meilleur ami pour réduire cette taxe légalement.</div><h3>Le PEA — Plan Épargne en Actions</h3><ul><li>Plafond : 150 000 € de versements</li><li>Avantage fiscal : après 5 ans de détention, 0% d'IR sur les gains (seulement 17.2% PS)</li><li>Contrainte : uniquement actions/ETFs européens en direct (mais ACWI via un ETF synthétique PEA c'est possible)</li><li>Condition : ne pas retirer avant 5 ans (sinon pénalité + clôture)</li></ul><h3>Le CTO — Compte-Titres Ordinaire</h3><ul><li>Pas de limite de versement</li><li>Tous les actifs mondiaux accessibles</li><li>Imposition au PFU 30% sur chaque cession</li></ul><h3>Stratégie optimale</h3><p>Remplis d'abord ton PEA avec les ETFs éligibles (ACWI synthétique, S&P500), puis utilise le CTO pour le reste (EM Asia, actions US directes, Or, Uranium). Trade Republic propose les deux.</p>`},
-  {id:"patrimoine-long-terme",title:"Construire un patrimoine long terme",icon:"🏛️",rank:"expert",desc:"La stratégie des 10-30 ans",content:`<h3>Les 3 piliers du patrimoine long terme</h3><ul><li><strong>Épargne régulière</strong> : le DCA mensuel, automatique, sans exceptions</li><li><strong>Diversification inter-actifs</strong> : bourse + immo + or + liquidités</li><li><strong>Optimisation fiscale</strong> : PEA + assurance-vie + éventuellement SCI</li></ul><h3>Le pouvoir des intérêts composés</h3><p>Albert Einstein aurait dit que les intérêts composés sont "la huitième merveille du monde". 500€/mois à 8%/an pendant 30 ans = <strong>745 000 €</strong> pour seulement 180 000 € investis. Le reste c'est la magie de la composition.</p><div class="highlight">💡 Commencer à 22 ans avec 200€/mois vaut mieux que commencer à 32 ans avec 400€/mois. Le temps est l'actif le plus précieux.</div><h3>La règle des 4%</h3><p>Pour atteindre l'indépendance financière, l'objectif est d'accumuler 25x tes dépenses annuelles. Tu peux alors retirer 4% par an sans entamer le capital (basé sur les études Trinity). Pour 24 000 € de dépenses/an → objectif 600 000 €.</p><h3>Les erreurs à éviter</h3><ul><li>Vendre en période de baisse (le plus coûteux)</li><li>Chasser la performance récente</li><li>Négliger les frais (1% de frais sur 30 ans = -25% du capital final)</li><li>Procrastiner — chaque année perdue coûte très cher</li></ul>`},
+  {id:"fond-precaution",title:"Le fonds de précaution",icon:"🛡️",rank:"argent",desc:"Pourquoi c'est la base de tout",content:`<h3>Pourquoi le fonds de précaution est indispensable</h3><p>Avant d'investir un seul euro en bourse, tu dois avoir un <strong>fonds de précaution</strong> : une réserve d'argent liquide équivalant à 3 à 6 mois de tes charges fixes.</p><p>Pourquoi ? Parce que si tu as une dépense imprévue (voiture en panne, chômage, santé), tu seras forcé de vendre tes investissements — parfois au pire moment, en plein krach.</p><div class="highlight">💡 Règle : Livret A + LDDS avant tout. Remplis-les avant d'investir en bourse.</div><h3>Combien exactement ?</h3><ul><li>Additionne tes charges fixes mensuelles (loyer, charges, abonnements, nourriture estimée)</li><li>Multiplie par 3 (minimum) ou par 6 (idéal)</li><li>Place cette somme sur Livret A et/ou LDDS — jamais en bourse</li></ul><h3>Une fois constitué</h3><p>Une fois ton fonds de précaution en place, tu peux investir sereinement — tu sais que tu ne seras jamais forcé de vendre en urgence. C'est le fondement psychologique de l'investisseur calme.</p>`},
+  {id:"dca",title:"Le DCA — Dollar Cost Averaging",icon:"📅",rank:"or",desc:"La stratégie qui bat 95% des traders",content:`<h3>C'est quoi le DCA ?</h3><p>Le <strong>Dollar Cost Averaging</strong> (DCA) consiste à investir un montant fixe à intervalles réguliers — par exemple 300€ tous les premiers du mois — peu importe ce que fait le marché.</p><div class="highlight">💡 Tu achètes plus de parts quand les prix sont bas, moins quand ils sont hauts — automatiquement.</div><h3>Pourquoi ça marche</h3><ul><li>Élimine le market timing (personne ne peut prévoir les marchés)</li><li>Réduit l'impact de la volatilité sur ton prix moyen d'achat</li><li>Crée une discipline d'investissement automatique</li><li>Réduit le stress psychologique — tu n'attends plus "le bon moment"</li></ul><h3>Exemple concret</h3><p>Tu investis 300€/mois sur ACWI pendant 10 ans à 8%/an de rendement moyen : tu arrives à environ <strong>55 000 €</strong> pour 36 000 € investis — soit +53% de gains composés.</p><h3>Comment faire avec Trade Republic</h3><p>Trade Republic propose des plans d'investissement automatiques (Sparplan) — tu configures une fois, ça tourne tout seul. C'est le DCA parfait.</p>`},
+  {id:"rebalancing",title:"Le rebalancing",icon:"⚖️",rank:"platine",desc:"Acheter bas, vendre haut automatiquement",content:`<h3>Qu'est-ce que le rebalancing ?</h3><p>Avec le temps, tes positions évoluent différemment. Si NVDA monte de 40%, elle représente maintenant 25% de ton portfolio au lieu des 10% visés. Tu es surexposé sans l'avoir décidé.</p><p>Le <strong>rebalancing</strong> consiste à revenir périodiquement (tous les 6-12 mois) à ton allocation cible en vendant ce qui a trop monté et achetant ce qui est sous-pondéré.</p><div class="highlight">💡 Mathématiquement, le rebalancing force à "acheter bas, vendre haut" — c'est contre-intuitif mais efficace.</div><h3>Comment faire avec CAPITAL</h3><p>L'onglet <strong>Rebalancing</strong> calcule automatiquement les écarts vs tes cibles et te dit exactement quoi acheter/vendre en euros.</p><h3>Fréquence recommandée</h3><ul><li>1 fois par an minimum</li><li>Ou quand un actif dépasse +5% de son poids cible</li><li>Idéalement lors de ton DCA mensuel — investis d'abord dans les sous-pondérés</li></ul>`},
+  {id:"diversification",title:"La diversification",icon:"🌍",rank:"diamant",desc:"Ne pas mettre tous ses œufs dans le même panier",content:`<h3>Pourquoi diversifier ?</h3><p>La diversification réduit le <strong>risque spécifique</strong> (risque lié à un actif particulier) sans nécessairement réduire le rendement.</p><p>Un portefeuille 100% NVDA peut doubler — mais peut aussi perdre 70% en un an. Un portefeuille 60% ACWI + 20% EM Asia + 10% Or + 10% Obligations limitera les drawdowns extrêmes.</p><div class="highlight">💡 Harry Markowitz (Prix Nobel d'économie) : "La diversification est le seul repas gratuit en finance."</div><h3>Les niveaux de diversification</h3><ul><li><strong>Actifs</strong> : plusieurs positions, pas une seule</li><li><strong>Géographique</strong> : US, Europe, Émergents, Asie</li><li><strong>Sectorielle</strong> : Tech, Finance, Santé, Énergie...</li><li><strong>Classes d'actifs</strong> : Actions + Or + Obligations + Immo</li></ul><h3>Attention : diversification ≠ dilution</h3><p>Avoir 50 ETFs différents qui font tous la même chose (S&P500) n'est pas de la diversification. ACWI + EM Asia + Or + Obligations — 4 actifs, vraie diversification.</p>`},
+  {id:"fiscalite",title:"Fiscalité française de l'investissement",icon:"🏦",rank:"maitre",desc:"PEA, CTO, PFU — comment payer moins d'impôts légalement",content:`<h3>Le PFU (Flat Tax) — 30%</h3><p>En France, les gains sur investissements (plus-values + dividendes) sont taxés à <strong>30% flat</strong> (17.2% prélèvements sociaux + 12.8% IR) — sauf si tu es dans une tranche marginale basse.</p><div class="highlight">💡 Le PEA est ton meilleur ami pour réduire cette taxe légalement.</div><h3>Le PEA — Plan Épargne en Actions</h3><ul><li>Plafond : 150 000 € de versements</li><li>Avantage fiscal : après 5 ans de détention, 0% d'IR sur les gains (seulement 17.2% PS)</li><li>Contrainte : uniquement actions/ETFs européens en direct (mais ACWI via un ETF synthétique PEA c'est possible)</li><li>Condition : ne pas retirer avant 5 ans (sinon pénalité + clôture)</li></ul><h3>Le CTO — Compte-Titres Ordinaire</h3><ul><li>Pas de limite de versement</li><li>Tous les actifs mondiaux accessibles</li><li>Imposition au PFU 30% sur chaque cession</li></ul><h3>Stratégie optimale</h3><p>Remplis d'abord ton PEA avec les ETFs éligibles (ACWI synthétique, S&P500), puis utilise le CTO pour le reste (EM Asia, actions US directes, Or, Uranium). Trade Republic propose les deux.</p>`},
+  {id:"patrimoine-long-terme",title:"Construire un patrimoine long terme",icon:"🏛️",rank:"legende",desc:"La stratégie des 10-30 ans",content:`<h3>Les 3 piliers du patrimoine long terme</h3><ul><li><strong>Épargne régulière</strong> : le DCA mensuel, automatique, sans exceptions</li><li><strong>Diversification inter-actifs</strong> : bourse + immo + or + liquidités</li><li><strong>Optimisation fiscale</strong> : PEA + assurance-vie + éventuellement SCI</li></ul><h3>Le pouvoir des intérêts composés</h3><p>Albert Einstein aurait dit que les intérêts composés sont "la huitième merveille du monde". 500€/mois à 8%/an pendant 30 ans = <strong>745 000 €</strong> pour seulement 180 000 € investis. Le reste c'est la magie de la composition.</p><div class="highlight">💡 Commencer à 22 ans avec 200€/mois vaut mieux que commencer à 32 ans avec 400€/mois. Le temps est l'actif le plus précieux.</div><h3>La règle des 4%</h3><p>Pour atteindre l'indépendance financière, l'objectif est d'accumuler 25x tes dépenses annuelles. Tu peux alors retirer 4% par an sans entamer le capital (basé sur les études Trinity). Pour 24 000 € de dépenses/an → objectif 600 000 €.</p><h3>Les erreurs à éviter</h3><ul><li>Vendre en période de baisse (le plus coûteux)</li><li>Chasser la performance récente</li><li>Négliger les frais (1% de frais sur 30 ans = -25% du capital final)</li><li>Procrastiner — chaque année perdue coûte très cher</li></ul>`},
 ];
 
 let xp=0, doneLessons=new Set();
@@ -1572,7 +1591,15 @@ function renderRebalancing(){
 }
 function updateTarget(t,v){targets[t]=parseFloat(v)||0;updateTargetSum();renderRebalTable();}
 function updateTargetSum(){const sum=Object.values(targets).reduce((s,v)=>s+v,0);const el=document.getElementById("target-sum");el.textContent=sum.toFixed(1)+"%";el.style.color=Math.abs(sum-100)<1?"var(--green)":sum>100?"var(--red)":"var(--amber)";}
-async function saveTargets(){await setSetting("targets_"+currentPF,JSON.stringify(targets));showToast("Cibles sauvegardées");addXP(100,"Rebalancing configuré !");}
+async function saveTargets(){
+  const wasConfigured=await getSetting("targets_configured_"+currentPF);
+  await setSetting("targets_"+currentPF,JSON.stringify(targets));
+  showToast("Cibles sauvegardées ✓");
+  if(!wasConfigured&&Object.keys(targets).length>0){
+    await setSetting("targets_configured_"+currentPF,"1");
+    addXP(100,"Rebalancing configuré !");
+  }
+}
 function renderRebalTable(){
   const tot=totV();
   document.getElementById("rebal-body").innerHTML=positions.map(p=>{
@@ -1614,8 +1641,8 @@ function runWhatIf(){
   const simGeo=simPositions.reduce((m,p)=>{const a=getA(p.ticker);(a?a.P:[{n:p.ticker,p:100}]).forEach(d=>{m[d.n]=(m[d.n]||0)+d.p*(p.current_value/simTot);});return m;},{});
   const afterGeo=Object.entries(simGeo).map(([n,p])=>({n,p})).sort((a,b)=>b.p-a.p);
   document.getElementById("wi-geo-card").style.display="block";
-  renderBars("wi-geo-before",beforeGeo.slice(0,7),beforeGeo[0]?.p);
-  renderBars("wi-geo-after",afterGeo.slice(0,8),afterGeo[0]?.p);
+  renderBars("wi-geo-b",beforeGeo.slice(0,7),beforeGeo[0]?.p);
+  renderBars("wi-geo-a",afterGeo.slice(0,8),afterGeo[0]?.p);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1784,17 +1811,68 @@ async function delCrypto(id){if(!confirm("Supprimer ?"))return;await dbDel("cryp
 function renderProgression(){
   const rank=getRank(xp),next=getNextRank(xp);
   const pct=next?(xp-rank.xp)/(next.xp-rank.xp)*100:100;
-  document.getElementById("rank-card").innerHTML=`<div class="rank-icon">${rank.icon}</div><div class="rank-name">${rank.name}</div><div class="rank-desc">${rank.desc}</div><div class="rank-xp-big">${xp.toLocaleString("fr-FR")} XP</div><div class="rank-bar-track"><div class="rank-bar-fill" style="width:${pct}%"></div></div><div class="rank-next">${next?`${(next.xp-xp).toLocaleString("fr-FR")} XP pour atteindre ${next.icon} ${next.name}`:"Rang maximum atteint 👑"}</div>`;
-  document.getElementById("ranks-grid").innerHTML=RANKS.map(r=>`<div class="rank-item ${xp>=r.xp?"done":""} ${rank.id===r.id?"current":""}"><div class="ri-icon">${r.icon}</div><div class="ri-name">${r.name}</div><div class="ri-xp">${r.xp.toLocaleString("fr-FR")} XP</div>${xp>=r.xp?`<div style="color:var(--green);font-size:10px;margin-top:3px">✓ Atteint</div>`:""}</div>`).join("");
+  const rankIdx=RANKS.findIndex(r=>r.id===rank.id);
+
+  // Hero rang
+  const rh=document.getElementById("rank-hero");
+  if(rh)rh.innerHTML=`
+    <div class="rank-icon">${rank.icon}</div>
+    <div class="rank-name">${rank.name}</div>
+    <div class="rank-desc">${rank.desc}</div>
+    <div class="rank-xp">${xp.toLocaleString("fr-FR")} XP</div>
+    <div class="rank-bar-tr"><div class="rank-bar-fi" style="width:${pct}%"></div></div>
+    <div class="rank-next">${next?`<span style="color:var(--pu2)">${(next.xp-xp).toLocaleString("fr-FR")} XP</span> pour atteindre ${next.icon} ${next.name}`:"<span style='color:var(--am)'>👑 Rang maximum atteint !</span>"}</div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:12px">
+      ${RANKS.map((r,i)=>`<div title="${r.name}" style="font-size:${i===rankIdx?'20px':'14px'};opacity:${xp>=r.xp?'1':'0.25'};transition:all 0.3s">${r.icon}</div>`).join("")}
+    </div>`;
+
+  // Stats rapides
+  const tot=totV(),inv=totI(),gain=tot-inv,perf=inv>0?gain/inv*100:0;
+  const ps=document.getElementById("prog-stats");
+  if(ps)ps.innerHTML=`
+    <div class="kpi kpi-pu"><div class="kpi-lbl">Rang actuel</div><div class="kpi-val pu">${rank.icon} ${rank.name}</div><div class="kpi-sub">${rankIdx+1}/${RANKS.length}</div></div>
+    <div class="kpi kpi-gn"><div class="kpi-lbl">XP total</div><div class="kpi-val gn">${xp.toLocaleString("fr-FR")}</div><div class="kpi-sub">${next?(next.xp-xp).toLocaleString("fr-FR")+" XP restants":"MAX 🏆"}</div></div>
+    <div class="kpi kpi-bl"><div class="kpi-lbl">Positions</div><div class="kpi-val bl">${positions.length}</div><div class="kpi-sub">actifs suivis</div></div>
+    <div class="kpi kpi-rd"><div class="kpi-lbl">Leçons lues</div><div class="kpi-val ${doneLessons.size>0?"gn":"rd"}">${doneLessons.size}/${LESSONS.length}</div><div class="kpi-sub">éducation financière</div></div>`;
+
+  // Quêtes
   const defis=[
-    {icon:"💰",title:"Investis ce mois",desc:"Ajoute ou mets à jour au moins une position",xp:30,done:positions.length>0},
-    {icon:"⚖️",title:"Configure tes cibles",desc:"Définis une allocation cible dans Rebalancing",xp:100,done:Object.keys(targets).length>0},
-    {icon:"📊",title:"Portfolio diversifié",desc:"Aie au moins 3 positions différentes",xp:75,done:positions.length>=3},
-    {icon:"🛡️",title:"Valeur refuge",desc:"Ajoute de l'or ou des obligations",xp:50,done:positions.some(p=>["GOLD","GLD","IAU","TLT","AGG"].includes(p.ticker))},
-    {icon:"📚",title:"Lis une leçon",desc:"Ouvre et lis une leçon dans Éducation",xp:25,done:doneLessons.size>0},
-    {icon:"🌍",title:"Diversification géo.",desc:"Aie des actifs sur au moins 2 zones géo.",xp:80,done:(()=>{const zones=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)zones.add(pay.n.slice(0,5));});});return zones.size>=2;})()},
+    {icon:"🚀",title:"Première position",desc:"Ajoute ton premier actif dans le portfolio",xp:50,done:positions.length>0,cat:"Débutant"},
+    {icon:"💰",title:"Investisseur actif",desc:"Aie au moins une position à jour ce mois",xp:30,done:positions.length>0,cat:"Mensuel"},
+    {icon:"📊",title:"Portfolio diversifié",desc:"Aie au moins 3 positions différentes",xp:75,done:positions.length>=3,cat:"Portfolio"},
+    {icon:"⚖️",title:"Configure tes cibles",desc:"Définis une allocation cible dans Rebalancing",xp:100,done:Object.keys(targets).length>0,cat:"Avancé"},
+    {icon:"🛡️",title:"Valeur refuge",desc:"Ajoute de l'or ou des obligations dans ton portfolio",xp:50,done:positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","XGLD"].includes(p.ticker)),cat:"Risque"},
+    {icon:"🌍",title:"Diversification géo.",desc:"Aie des actifs sur au moins 2 zones géographiques",xp:80,done:(()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=2;})(),cat:"Géo"},
+    {icon:"📚",title:"Apprendre",desc:"Lis au moins une leçon dans Éducation financière",xp:25,done:doneLessons.size>0,cat:"Éducation"},
+    {icon:"💎",title:"Long terme",desc:"Aie 5 positions ou plus dans ton portfolio",xp:150,done:positions.length>=5,cat:"Expert"},
+    {icon:"🎯",title:"Objectif fixé",desc:"Définis un objectif de capital dans le dashboard",xp:40,done:(()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>0;})(),cat:"Planning"},
   ];
-  document.getElementById("defis-list").innerHTML=defis.map(d=>`<div class="defi ${d.done?"done":""}"><div class="defi-icon">${d.icon}</div><div class="defi-info"><div class="defi-title">${d.title}</div><div class="defi-desc">${d.desc}</div></div><span class="defi-xp">+${d.xp} XP</span>${d.done?`<span class="defi-check">✓</span>`:""}</div>`).join("");
+  const done=defis.filter(d=>d.done).length;
+  const qt=document.getElementById("quetes-progress");
+  if(qt)qt.textContent=`${done}/${defis.length} complétées`;
+  const dl=document.getElementById("defis-list");
+  if(dl)dl.innerHTML=defis.map(d=>`
+    <div class="defi ${d.done?"done":""}">
+      <div class="defi-icon">${d.icon}</div>
+      <div class="defi-info">
+        <div class="defi-title">${d.title} <span style="font-size:9px;color:var(--t3);font-family:var(--M)">${d.cat}</span></div>
+        <div class="defi-desc">${d.desc}</div>
+      </div>
+      <span class="defi-xp">${d.done?`<span style="color:var(--gn)">✓ +${d.xp} XP</span>`:`+${d.xp} XP`}</span>
+    </div>`).join("");
+
+  // Rangs
+  const rg=document.getElementById("ranks-grid");
+  if(rg)rg.innerHTML=RANKS.map(r=>`
+    <div class="rank-item ${xp>=r.xp?"done":""} ${rank.id===r.id?"curr":""}">
+      <div class="ri-icon">${r.icon}</div>
+      <div class="ri-name">${r.name}</div>
+      <div class="ri-xp">${r.xp.toLocaleString("fr-FR")} XP</div>
+      ${xp>=r.xp?`<div style="color:var(--gn);font-size:9px;margin-top:3px">✓ Atteint</div>`:rank.id===r.id?`<div style="color:var(--pu2);font-size:9px;margin-top:3px">● En cours</div>`:""}
+    </div>`).join("");
+
+  // Leçons
+  renderEducation();
 }
 function renderEducation(){
   document.getElementById("lessons-grid").innerHTML=LESSONS.map(l=>{
