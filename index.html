@@ -1936,7 +1936,8 @@ async function renderPatri(){
 async function delPatri(id){
   if(!confirm("Supprimer cet actif ?"))return;
   await dbDel("patrimoine",String(id));
-  await renderPatri();
+  await loadPositions(); // recharger avant de re-rendre
+  renderPatri();
   renderAutres();
   showToast("Supprimé ✓");
 }
@@ -1952,7 +1953,7 @@ async function addPatri(){
   if(!item.nom||!item.valeur){showToast("Remplis le nom et la valeur","error");return;}
   await dbPut("patrimoine",item);addJournalEntry("PATRIMOINE",`${item.categorie} : ${item.nom} — ${fmt(item.valeur)} €`);
   document.getElementById("patri-overlay").classList.remove("open");
-  await loadPositions();await renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");
+  await loadPositions();renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");
 }
 function renderAutres(){
   document.getElementById("autres-kpis").innerHTML=Object.entries(PATRI_CATS).map(([cat,cfg])=>{const val=patriItems.filter(p=>p.categorie===cat).reduce((s,p)=>s+(p.valeur||0),0);return val>0?`<div class="kpi kpi-purple"><div class="kpi-label">${cfg.icon} ${cfg.label}</div><div class="kpi-value" style="color:var(--acc2)">${fmt(val)} €</div></div>`:""}).join("")||`<div class="kpi kpi-purple"><div class="kpi-label">Autres actifs</div><div class="kpi-value" style="color:var(--acc2)">—</div><div class="kpi-sub">Aucun actif</div></div>`;
