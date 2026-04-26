@@ -1786,7 +1786,59 @@ const LESSONS=[
   {id:"patrimoine-long-terme",title:"Construire un patrimoine long terme",icon:"🏛️",rank:"legende",desc:"La stratégie des 10-30 ans",content:`<h3>Les 3 piliers du patrimoine long terme</h3><ul><li><strong>Épargne régulière</strong> : le DCA mensuel, automatique, sans exceptions</li><li><strong>Diversification inter-actifs</strong> : bourse + immo + or + liquidités</li><li><strong>Optimisation fiscale</strong> : PEA + assurance-vie + éventuellement SCI</li></ul><h3>Le pouvoir des intérêts composés</h3><p>Albert Einstein aurait dit que les intérêts composés sont "la huitième merveille du monde". 500€/mois à 8%/an pendant 30 ans = <strong>745 000 €</strong> pour seulement 180 000 € investis. Le reste c'est la magie de la composition.</p><div class="highlight">💡 Commencer à 22 ans avec 200€/mois vaut mieux que commencer à 32 ans avec 400€/mois. Le temps est l'actif le plus précieux.</div><h3>La règle des 4%</h3><p>Pour atteindre l'indépendance financière, l'objectif est d'accumuler 25x tes dépenses annuelles. Tu peux alors retirer 4% par an sans entamer le capital (basé sur les études Trinity). Pour 24 000 € de dépenses/an → objectif 600 000 €.</p><h3>Les erreurs à éviter</h3><ul><li>Vendre en période de baisse (le plus coûteux)</li><li>Chasser la performance récente</li><li>Négliger les frais (1% de frais sur 30 ans = -25% du capital final)</li><li>Procrastiner — chaque année perdue coûte très cher</li></ul>`},
 ];
 
-let xp=0, doneLessons=new Set();
+// ─── SYSTÈME DE QUÊTES ───────────────────────────────────────────────────────
+const QUESTS = [
+  // Débutant
+  {id:"q_first_pos",    icon:"🚀", title:"Premier pas",         desc:"Ajoute ton premier actif en portefeuille",                     xp:50,  cat:"Débutant",   check:()=>positions.length>=1},
+  {id:"q_first_crypto", icon:"₿",  title:"Crypto curious",       desc:"Ajoute une crypto dans ton portfolio",                         xp:40,  cat:"Débutant",   check:()=>cryptoPos.length>=1},
+  {id:"q_first_patri",  icon:"🏠", title:"Patrimoine tracké",    desc:"Ajoute un actif patrimonial (immobilier, liquidités...)",      xp:40,  cat:"Débutant",   check:()=>patriItems.length>=1},
+  {id:"q_first_lesson", icon:"📚", title:"Soif d'apprendre",    desc:"Lis ta première leçon d'éducation financière",                 xp:30,  cat:"Débutant",   check:()=>doneLessons.size>=1},
+  {id:"q_set_target",   icon:"🎯", title:"Objectif fixé",        desc:"Définis un objectif de capital dans le dashboard",             xp:30,  cat:"Débutant",   check:()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>0;}},
+  // Portfolio
+  {id:"q_3pos",         icon:"📊", title:"Début de diversif.",   desc:"Aie au moins 3 positions différentes",                        xp:75,  cat:"Portfolio",   check:()=>positions.length>=3},
+  {id:"q_5pos",         icon:"💼", title:"Portfolio solide",     desc:"Aie au moins 5 positions dans le portefeuille",               xp:100, cat:"Portfolio",   check:()=>positions.length>=5},
+  {id:"q_10pos",        icon:"📈", title:"Investisseur sérieux", desc:"Aie au moins 10 positions",                                   xp:200, cat:"Portfolio",   check:()=>positions.length>=10},
+  {id:"q_etf",          icon:"🌐", title:"ETF addict",           desc:"Aie au moins un ETF dans le portefeuille",                    xp:50,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.tp==="ETF";})},
+  {id:"q_gold",         icon:"🛡️", title:"Valeur refuge",        desc:"Ajoute de l'or, de l'argent ou des obligations",              xp:60,  cat:"Portfolio",   check:()=>positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","SLV","PPLT","URA","SGOL"].includes(p.ticker))},
+  // Financier
+  {id:"q_10k",          icon:"💰", title:"5 chiffres",           desc:"Atteins 10 000 € de patrimoine net total",                    xp:150, cat:"Financier",   check:()=>totPatri().total>=10000},
+  {id:"q_25k",          icon:"💎", title:"Cap des 25K",          desc:"Atteins 25 000 € de patrimoine net total",                    xp:300, cat:"Financier",   check:()=>totPatri().total>=25000},
+  {id:"q_positive",     icon:"✅", title:"En territoire positif", desc:"Aie un portefeuille avec +5% de performance",                xp:80,  cat:"Financier",   check:()=>{const t=totI();return t>0&&(totV()-t)/t>=0.05;}},
+  {id:"q_div",          icon:"💸", title:"Dividende reçu",       desc:"Enregistre ton premier dividende",                            xp:50,  cat:"Financier",   check:async()=>{const d=await dbAll("dividends");return d.filter(x=>String(x.portfolio_id)===String(currentPF)).length>0;}},
+  // Avancé
+  {id:"q_rebal",        icon:"⚖️", title:"Rebalancing maîtrisé", desc:"Configure des cibles d'allocation dans Rebalancing",          xp:100, cat:"Avancé",      check:()=>Object.keys(targets).length>0},
+  {id:"q_geo2",         icon:"🌍", title:"Cap sur le monde",     desc:"Aie des actifs sur au moins 2 zones géographiques",           xp:80,  cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=2;}},
+  {id:"q_geo3",         icon:"🗺️", title:"Investisseur mondial",  desc:"Couvre 3 zones géographiques différentes",                   xp:120, cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=3;}},
+  {id:"q_all_lessons",  icon:"🎓", title:"Diplômé CAPITAL",      desc:"Termine toutes les leçons d'éducation financière",            xp:250, cat:"Avancé",      check:()=>doneLessons.size>=LESSONS.length},
+];
+
+let completedQuests = new Set();
+
+async function loadQuests(){
+  const saved = await getSetting("completed_quests");
+  completedQuests = new Set(saved ? JSON.parse(saved) : []);
+}
+
+async function checkQuests(){
+  let newlyCompleted = [];
+  for(const q of QUESTS){
+    if(completedQuests.has(q.id)) continue;
+    let done = false;
+    try { done = await Promise.resolve(q.check()); } catch(e){}
+    if(done){
+      completedQuests.add(q.id);
+      newlyCompleted.push(q);
+    }
+  }
+  if(newlyCompleted.length){
+    await setSetting("completed_quests", JSON.stringify([...completedQuests]));
+    for(const q of newlyCompleted){
+      await addXP(q.xp, `Quête : ${q.title} 🏅`);
+    }
+    if(currentPage === "progression") renderProgression();
+  }
+}
+
 
 function getRank(xp){let r=RANKS[0];for(const rank of RANKS){if(xp>=rank.xp)r=rank;}return r;}
 function getNextRank(xp){return RANKS.find(r=>r.xp>xp)||null;}
@@ -1796,6 +1848,7 @@ async function loadXP(){
   xp=parseInt(saved||"0")||0;
   const dl=await getSetting("done_lessons");
   doneLessons=new Set(dl?JSON.parse(dl):[]);
+  await loadQuests();
   renderXPBar();
 }
 async function addXP(amount,reason=""){
@@ -2044,6 +2097,7 @@ async function initApp(){
   await takeDailySnapshot();
   await renderOverview();
   renderPatri();
+  checkQuests(); // vérifier les quêtes au démarrage
   updateClock();
   setInterval(updateClock,1000);
   // Auto-refresh prices every 60s
@@ -2513,7 +2567,7 @@ async function addPatri(){
   if(!item.nom||!item.valeur){showToast("Remplis le nom et la valeur","error");return;}
   await dbPut("patrimoine",item);addJournalEntry("PATRIMOINE",`${item.categorie} : ${item.nom} — ${fmt(item.valeur)} €`);
   document.getElementById("patri-overlay").classList.remove("open");
-  await loadPositions();renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");
+  await loadPositions();renderPatri();showToast("Actif ajouté : "+item.nom);addXP(30,"Patrimoine enrichi !");checkQuests();
 }
 function renderAutres(){
   document.getElementById("autres-kpis").innerHTML=Object.entries(PATRI_CATS).map(([cat,cfg])=>{const val=patriItems.filter(p=>p.categorie===cat).reduce((s,p)=>s+(p.valeur||0),0);return val>0?`<div class="kpi kpi-purple"><div class="kpi-label">${cfg.icon} ${cfg.label}</div><div class="kpi-value" style="color:var(--acc2)">${fmt(val)} €</div></div>`:""}).join("")||`<div class="kpi kpi-purple"><div class="kpi-label">Autres actifs</div><div class="kpi-value" style="color:var(--acc2)">—</div><div class="kpi-sub">Aucun actif</div></div>`;
@@ -2536,7 +2590,7 @@ async function addCrypto(){
   const pos={portfolio_id:String(currentPF),coin_id:crSelCoin.id,symbol:crSelCoin.sym,name:crSelCoin.name,quantity:qty,avg_buy_price:avg,current_value:val,invested:inv,wallet:document.getElementById("cr-wallet").value};
   await dbPut("crypto",pos);addJournalEntry("CRYPTO",`${crSelCoin.sym} — ${fmt(val)} €`);
   document.getElementById("crypto-overlay").classList.remove("open");
-  await loadPositions();renderCrypto();showToast("✓ "+crSelCoin.sym+" ajouté");addXP(40,"Première crypto ajoutée !");
+  await loadPositions();renderCrypto();showToast("✓ "+crSelCoin.sym+" ajouté");addXP(40,"Première crypto ajoutée !");checkQuests();
 }
 function renderCrypto(){
   const tot=cryptoPos.reduce((s,p)=>s+p.current_value,0);
@@ -2577,34 +2631,37 @@ function renderProgression(){
   if(ps)ps.innerHTML=`
     <div class="kpi kpi-pu"><div class="kpi-lbl">Rang actuel</div><div class="kpi-val pu">${rank.icon} ${rank.name}</div><div class="kpi-sub">${rankIdx+1}/${RANKS.length}</div></div>
     <div class="kpi kpi-gn"><div class="kpi-lbl">XP total</div><div class="kpi-val gn">${xp.toLocaleString("fr-FR")}</div><div class="kpi-sub">${next?(next.xp-xp).toLocaleString("fr-FR")+" XP restants":"MAX 🏆"}</div></div>
-    <div class="kpi kpi-bl"><div class="kpi-lbl">Positions</div><div class="kpi-val bl">${positions.length}</div><div class="kpi-sub">actifs suivis</div></div>
+    <div class="kpi kpi-bl"><div class="kpi-lbl">Quêtes</div><div class="kpi-val bl">${completedQuests.size}/${QUESTS.length}</div><div class="kpi-sub">complétées</div></div>
     <div class="kpi kpi-rd"><div class="kpi-lbl">Leçons lues</div><div class="kpi-val ${doneLessons.size>0?"gn":"rd"}">${doneLessons.size}/${LESSONS.length}</div><div class="kpi-sub">éducation financière</div></div>`;
 
-  // Quêtes
-  const defis=[
-    {icon:"🚀",title:"Première position",desc:"Ajoute ton premier actif dans le portfolio",xp:50,done:positions.length>0,cat:"Débutant"},
-    {icon:"💰",title:"Investisseur actif",desc:"Aie au moins une position à jour ce mois",xp:30,done:positions.length>0,cat:"Mensuel"},
-    {icon:"📊",title:"Portfolio diversifié",desc:"Aie au moins 3 positions différentes",xp:75,done:positions.length>=3,cat:"Portfolio"},
-    {icon:"⚖️",title:"Configure tes cibles",desc:"Définis une allocation cible dans Rebalancing",xp:100,done:Object.keys(targets).length>0,cat:"Avancé"},
-    {icon:"🛡️",title:"Valeur refuge",desc:"Ajoute de l'or ou des obligations dans ton portfolio",xp:50,done:positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","XGLD"].includes(p.ticker)),cat:"Risque"},
-    {icon:"🌍",title:"Diversification géo.",desc:"Aie des actifs sur au moins 2 zones géographiques",xp:80,done:(()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=2;})(),cat:"Géo"},
-    {icon:"📚",title:"Apprendre",desc:"Lis au moins une leçon dans Éducation financière",xp:25,done:doneLessons.size>0,cat:"Éducation"},
-    {icon:"💎",title:"Long terme",desc:"Aie 5 positions ou plus dans ton portfolio",xp:150,done:positions.length>=5,cat:"Expert"},
-    {icon:"🎯",title:"Objectif fixé",desc:"Définis un objectif de capital dans le dashboard",xp:40,done:(()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>0;})(),cat:"Planning"},
-  ];
-  const done=defis.filter(d=>d.done).length;
+  // Quêtes — regroupées par catégorie
+  const done = QUESTS.filter(q=>completedQuests.has(q.id)).length;
   const qt=document.getElementById("quetes-progress");
-  if(qt)qt.textContent=`${done}/${defis.length} complétées`;
+  if(qt)qt.textContent=`${done}/${QUESTS.length} complétées`;
+
+  const cats=[...new Set(QUESTS.map(q=>q.cat))];
   const dl=document.getElementById("defis-list");
-  if(dl)dl.innerHTML=defis.map(d=>`
-    <div class="defi ${d.done?"done":""}">
-      <div class="defi-icon">${d.icon}</div>
-      <div class="defi-info">
-        <div class="defi-title">${d.title} <span style="font-size:9px;color:var(--t3);font-family:var(--M)">${d.cat}</span></div>
-        <div class="defi-desc">${d.desc}</div>
+  if(dl)dl.innerHTML=cats.map(cat=>{
+    const qs=QUESTS.filter(q=>q.cat===cat);
+    const catDone=qs.filter(q=>completedQuests.has(q.id)).length;
+    return `
+    <div style="margin-bottom:14px">
+      <div style="font-family:var(--D);font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:8px">
+        ${cat} <span style="font-family:var(--M);color:var(--pu2)">${catDone}/${qs.length}</span>
       </div>
-      <span class="defi-xp">${d.done?`<span style="color:var(--gn)">✓ +${d.xp} XP</span>`:`+${d.xp} XP`}</span>
-    </div>`).join("");
+      ${qs.map(q=>{
+        const isDone=completedQuests.has(q.id);
+        return `<div class="defi ${isDone?"done":""}">
+          <div class="defi-icon">${q.icon}</div>
+          <div class="defi-info">
+            <div class="defi-title">${q.title}</div>
+            <div class="defi-desc">${q.desc}</div>
+          </div>
+          <span class="defi-xp">${isDone?`<span style="color:var(--gn);font-size:11px">✓ +${q.xp} XP</span>`:`<span style="color:var(--pu2);font-family:var(--M);font-weight:700">+${q.xp} XP</span>`}</span>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
 
   // Rangs
   const rg=document.getElementById("ranks-grid");
@@ -2636,7 +2693,7 @@ function openLesson(id){
 async function markLessonDone(){
   if(!curLesson)return;
   if(!doneLessons.has(curLesson)){doneLessons.add(curLesson);await setSetting("done_lessons",JSON.stringify([...doneLessons]));addXP(25,"Leçon lue 📚");}
-  closeLesson();renderEducation();
+  closeLesson();renderEducation();checkQuests();
 }
 function closeLesson(){document.getElementById("lesson-overlay").classList.remove("open");curLesson=null;}
 
@@ -3011,6 +3068,7 @@ async function confirmAdd(){
   showToast("✓ "+selAsset.t+" ajouté");
   if(positions.length===1)addXP(50,"Première position ! 🎉");
   else addXP(20,"Position ajoutée");
+  checkQuests();
 }
 function openEdit(id){
   const p=positions.find(x=>x.id===id);if(!p)return;
