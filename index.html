@@ -4139,7 +4139,6 @@ async function resetAll(){
 // ═══════════════════════════════════════════════════════
 const FMAP={IT:["IT"],FIN:["FIN"],HEALTH:["HEALTH"],ENERGY:["ENERGY","CMDTY"]};
 function openSearch(){
-  loadExtDB(); // s'assurer que la DB est chargée
   document.getElementById("search-overlay").classList.add("open");
   document.getElementById("s-input").value="";
   document.getElementById("add-form").style.display="none";
@@ -4232,15 +4231,15 @@ let dbLoaded = false;
 
 async function loadExtDB(){
   if(dbLoaded) return;
+  dbLoaded = true; // bloquer les retries quelle que soit l'issue
   try{
     const r = await fetch(DB_URL);
     if(!r.ok) return;
     const text = await r.text();
-    if(!text.trim().startsWith('[')) return; // pas du JSON valide
+    if(!text||!text.trim().startsWith('[')) return;
     const ext = JSON.parse(text);
     if(!Array.isArray(ext)) return;
     ext.forEach(a => { if(!DB.find(d=>d.t===a.t)) DB.push(a); });
-    dbLoaded = true;
   }catch(e){ /* silencieux — db.json pas encore uploadé */ }
 }
 let priceCache = {};
