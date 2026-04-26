@@ -1788,28 +1788,59 @@ const LESSONS=[
 
 // ─── SYSTÈME DE QUÊTES ───────────────────────────────────────────────────────
 const QUESTS = [
-  // Débutant
-  {id:"q_first_pos",    icon:"🚀", title:"Premier pas",         desc:"Ajoute ton premier actif en portefeuille",                     xp:50,  cat:"Débutant",   check:()=>positions.length>=1},
-  {id:"q_first_crypto", icon:"₿",  title:"Crypto curious",       desc:"Ajoute une crypto dans ton portfolio",                         xp:40,  cat:"Débutant",   check:()=>cryptoPos.length>=1},
-  {id:"q_first_patri",  icon:"🏠", title:"Patrimoine tracké",    desc:"Ajoute un actif patrimonial (immobilier, liquidités...)",      xp:40,  cat:"Débutant",   check:()=>patriItems.length>=1},
-  {id:"q_first_lesson", icon:"📚", title:"Soif d'apprendre",    desc:"Lis ta première leçon d'éducation financière",                 xp:30,  cat:"Débutant",   check:()=>doneLessons.size>=1},
-  {id:"q_set_target",   icon:"🎯", title:"Objectif fixé",        desc:"Définis un objectif de capital dans le dashboard",             xp:30,  cat:"Débutant",   check:()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>0;}},
-  // Portfolio
-  {id:"q_3pos",         icon:"📊", title:"Début de diversif.",   desc:"Aie au moins 3 positions différentes",                        xp:75,  cat:"Portfolio",   check:()=>positions.length>=3},
-  {id:"q_5pos",         icon:"💼", title:"Portfolio solide",     desc:"Aie au moins 5 positions dans le portefeuille",               xp:100, cat:"Portfolio",   check:()=>positions.length>=5},
-  {id:"q_10pos",        icon:"📈", title:"Investisseur sérieux", desc:"Aie au moins 10 positions",                                   xp:200, cat:"Portfolio",   check:()=>positions.length>=10},
-  {id:"q_etf",          icon:"🌐", title:"ETF addict",           desc:"Aie au moins un ETF dans le portefeuille",                    xp:50,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.tp==="ETF";})},
-  {id:"q_gold",         icon:"🛡️", title:"Valeur refuge",        desc:"Ajoute de l'or, de l'argent ou des obligations",              xp:60,  cat:"Portfolio",   check:()=>positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","SLV","PPLT","URA","SGOL"].includes(p.ticker))},
-  // Financier
-  {id:"q_10k",          icon:"💰", title:"5 chiffres",           desc:"Atteins 10 000 € de patrimoine net total",                    xp:150, cat:"Financier",   check:()=>totPatri().total>=10000},
-  {id:"q_25k",          icon:"💎", title:"Cap des 25K",          desc:"Atteins 25 000 € de patrimoine net total",                    xp:300, cat:"Financier",   check:()=>totPatri().total>=25000},
-  {id:"q_positive",     icon:"✅", title:"En territoire positif", desc:"Aie un portefeuille avec +5% de performance",                xp:80,  cat:"Financier",   check:()=>{const t=totI();return t>0&&(totV()-t)/t>=0.05;}},
-  {id:"q_div",          icon:"💸", title:"Dividende reçu",       desc:"Enregistre ton premier dividende",                            xp:50,  cat:"Financier",   check:async()=>{const d=await dbAll("dividends");return d.filter(x=>String(x.portfolio_id)===String(currentPF)).length>0;}},
-  // Avancé
-  {id:"q_rebal",        icon:"⚖️", title:"Rebalancing maîtrisé", desc:"Configure des cibles d'allocation dans Rebalancing",          xp:100, cat:"Avancé",      check:()=>Object.keys(targets).length>0},
-  {id:"q_geo2",         icon:"🌍", title:"Cap sur le monde",     desc:"Aie des actifs sur au moins 2 zones géographiques",           xp:80,  cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=2;}},
-  {id:"q_geo3",         icon:"🗺️", title:"Investisseur mondial",  desc:"Couvre 3 zones géographiques différentes",                   xp:120, cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=3;}},
-  {id:"q_all_lessons",  icon:"🎓", title:"Diplômé Gestionary",      desc:"Termine toutes les leçons d'éducation financière",            xp:250, cat:"Avancé",      check:()=>doneLessons.size>=LESSONS.length},
+  // ── Débutant ──────────────────────────────────────────────────────────────
+  {id:"q_first_pos",    icon:"🚀", title:"Premier pas",           desc:"Ajoute ton premier actif en portefeuille",                           xp:50,  cat:"Débutant",   check:()=>positions.length>=1},
+  {id:"q_first_crypto", icon:"₿",  title:"Crypto curious",         desc:"Ajoute une crypto dans ton portfolio",                               xp:40,  cat:"Débutant",   check:()=>cryptoPos.length>=1},
+  {id:"q_first_patri",  icon:"🏠", title:"Patrimoine tracké",      desc:"Ajoute un actif patrimonial (immobilier, liquidités...)",            xp:40,  cat:"Débutant",   check:()=>patriItems.length>=1},
+  {id:"q_first_lesson", icon:"📚", title:"Soif d'apprendre",       desc:"Lis ta première leçon → Page Progression, section Éducation",       xp:30,  cat:"Débutant",   check:()=>doneLessons.size>=1},
+  {id:"q_set_target",   icon:"🎯", title:"Objectif fixé",          desc:"Définis un objectif de capital dans le Dashboard",                   xp:30,  cat:"Débutant",   check:()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>0;}},
+  {id:"q_set_target_real", icon:"💡",title:"Objectif ambitieux",   desc:"Fixe un objectif d'au moins 50 000 € dans le Dashboard",            xp:50,  cat:"Débutant",   check:()=>{const el=document.getElementById("obj-input");return el&&parseFloat(el.value)>=50000;}},
+  {id:"q_first_div",    icon:"💸", title:"Dividende tracké",       desc:"Enregistre ton premier dividende reçu",                             xp:40,  cat:"Débutant",   check:async()=>{const d=await dbAll("dividends");return d.filter(x=>String(x.portfolio_id)===String(currentPF)).length>0;}},
+  {id:"q_ask_ai",       icon:"🤖", title:"Consulte ton conseiller", desc:"Pose une question à l'IA dans l'onglet IA",                         xp:25,  cat:"Débutant",   check:()=>chatHistory.length>=2},
+
+  // ── Portfolio ──────────────────────────────────────────────────────────────
+  {id:"q_3pos",         icon:"📊", title:"Début de diversif.",     desc:"Aie au moins 3 positions différentes",                              xp:75,  cat:"Portfolio",   check:()=>positions.length>=3},
+  {id:"q_5pos",         icon:"💼", title:"Portfolio solide",       desc:"Aie au moins 5 positions dans le portefeuille",                     xp:100, cat:"Portfolio",   check:()=>positions.length>=5},
+  {id:"q_10pos",        icon:"📈", title:"Investisseur sérieux",   desc:"Aie au moins 10 positions",                                         xp:200, cat:"Portfolio",   check:()=>positions.length>=10},
+  {id:"q_15pos",        icon:"🏦", title:"Gestionnaire de fonds",  desc:"Aie au moins 15 positions",                                         xp:300, cat:"Portfolio",   check:()=>positions.length>=15},
+  {id:"q_etf",          icon:"🌐", title:"ETF addict",             desc:"Aie au moins un ETF dans le portefeuille",                          xp:50,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.tp==="ETF";})},
+  {id:"q_3etf",         icon:"🌏", title:"Fan des ETFs",           desc:"Aie au moins 3 ETFs différents",                                    xp:80,  cat:"Portfolio",   check:()=>positions.filter(p=>{const a=getA(p.ticker);return a&&a.tp==="ETF";}).length>=3},
+  {id:"q_gold",         icon:"🛡️", title:"Valeur refuge",          desc:"Ajoute de l'or, de l'argent ou des obligations",                    xp:60,  cat:"Portfolio",   check:()=>positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","SLV","PPLT","URA","SGOL","BND","BNDX"].includes(p.ticker))},
+  {id:"q_crypto3",      icon:"🔥", title:"Crypto diversifié",      desc:"Aie au moins 3 cryptos différentes",                                xp:60,  cat:"Portfolio",   check:()=>cryptoPos.length>=3},
+  {id:"q_patri3",       icon:"🏘️", title:"Patrimoine réel",        desc:"Aie au moins 3 actifs patrimoniaux enregistrés",                    xp:80,  cat:"Portfolio",   check:()=>patriItems.length>=3},
+  {id:"q_action_us",    icon:"🇺🇸", title:"Wall Street",            desc:"Aie au moins une action US dans le portfolio",                       xp:40,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.c==="US"&&a.tp==="Action";})},
+  {id:"q_action_eu",    icon:"🇪🇺", title:"Made in Europe",         desc:"Aie au moins une action européenne",                                xp:40,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.r==="EU"&&a.tp==="Action";})},
+  {id:"q_action_asia",  icon:"🌏", title:"Cap sur l'Asie",         desc:"Aie au moins une action ou ETF asiatique",                          xp:50,  cat:"Portfolio",   check:()=>positions.some(p=>{const a=getA(p.ticker);return a&&a.r==="ASIA";})},
+  {id:"q_div3",         icon:"🎁", title:"Revenus passifs",        desc:"Aie au moins 3 dividendes enregistrés",                             xp:80,  cat:"Portfolio",   check:async()=>{const d=await dbAll("dividends");return d.filter(x=>String(x.portfolio_id)===String(currentPF)).length>=3;}},
+
+  // ── Financier ──────────────────────────────────────────────────────────────
+  {id:"q_1k",           icon:"💶", title:"Première mise",          desc:"Atteins 1 000 € de valeur en bourse",                               xp:50,  cat:"Financier",   check:()=>totV()>=1000},
+  {id:"q_5k",           icon:"💰", title:"Cap des 5K",             desc:"Atteins 5 000 € de valeur en bourse",                               xp:80,  cat:"Financier",   check:()=>totV()>=5000},
+  {id:"q_10k",          icon:"💰", title:"5 chiffres",             desc:"Atteins 10 000 € de patrimoine net total",                          xp:150, cat:"Financier",   check:()=>totPatri().total>=10000},
+  {id:"q_25k",          icon:"💎", title:"Cap des 25K",            desc:"Atteins 25 000 € de patrimoine net total",                          xp:300, cat:"Financier",   check:()=>totPatri().total>=25000},
+  {id:"q_50k",          icon:"🏆", title:"Demi-cent mille",        desc:"Atteins 50 000 € de patrimoine net total",                          xp:500, cat:"Financier",   check:()=>totPatri().total>=50000},
+  {id:"q_100k",         icon:"👑", title:"Club des 100K",          desc:"Atteins 100 000 € de patrimoine net total",                         xp:1000,cat:"Financier",   check:()=>totPatri().total>=100000},
+  {id:"q_positive",     icon:"✅", title:"Territoire positif",     desc:"Aie un portefeuille avec +5% de performance",                       xp:80,  cat:"Financier",   check:()=>{const t=totI();return t>0&&(totV()-t)/t>=0.05;}},
+  {id:"q_perf10",       icon:"🚀", title:"+10% de performance",    desc:"Atteins +10% de rendement sur ton portefeuille bourse",             xp:150, cat:"Financier",   check:()=>{const t=totI();return t>0&&(totV()-t)/t>=0.10;}},
+  {id:"q_perf20",       icon:"⚡", title:"+20% de performance",    desc:"Atteins +20% de rendement — bien joué !",                          xp:300, cat:"Financier",   check:()=>{const t=totI();return t>0&&(totV()-t)/t>=0.20;}},
+  {id:"q_gain1k",       icon:"📊", title:"Premiers gains réels",   desc:"Aie au moins 1 000 € de plus-value latente",                        xp:100, cat:"Financier",   check:()=>totV()-totI()>=1000},
+  {id:"q_gain5k",       icon:"💹", title:"5K de plus-value",       desc:"Aie au moins 5 000 € de plus-value latente",                        xp:250, cat:"Financier",   check:()=>totV()-totI()>=5000},
+
+  // ── Avancé ─────────────────────────────────────────────────────────────────
+  {id:"q_rebal",        icon:"⚖️", title:"Rebalancing maîtrisé",  desc:"Configure des cibles d'allocation dans l'onglet Rebalancing",       xp:100, cat:"Avancé",      check:()=>Object.keys(targets).length>0},
+  {id:"q_rebal5",       icon:"🎯", title:"Allocation complète",    desc:"Configure au moins 5 cibles d'allocation",                          xp:150, cat:"Avancé",      check:()=>Object.keys(targets).length>=5},
+  {id:"q_geo2",         icon:"🌍", title:"Cap sur le monde",       desc:"Aie des actifs sur au moins 2 zones géographiques",                 xp:80,  cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=2;}},
+  {id:"q_geo3",         icon:"🗺️", title:"Investisseur mondial",   desc:"Couvre 3 zones géographiques différentes",                          xp:120, cat:"Avancé",      check:()=>{const z=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a)a.P.forEach(pay=>{if(pay.p>10)z.add(pay.n.slice(0,5));});});return z.size>=3;}},
+  {id:"q_sect3",        icon:"🏗️", title:"Multi-sectoriel",        desc:"Aie des positions dans au moins 3 secteurs différents",             xp:100, cat:"Avancé",      check:()=>{const s=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a&&a.sc)s.add(a.sc);});return s.size>=3;}},
+  {id:"q_sect5",        icon:"🌈", title:"Portfolio arc-en-ciel",  desc:"Aie des positions dans au moins 5 secteurs différents",             xp:200, cat:"Avancé",      check:()=>{const s=new Set();positions.forEach(p=>{const a=getA(p.ticker);if(a&&a.sc)s.add(a.sc);});return s.size>=5;}},
+  {id:"q_snap30",       icon:"📅", title:"30 jours de suivi",      desc:"Utilise Gestionary pendant 30 jours (snapshots quotidiens)",        xp:150, cat:"Avancé",      check:async()=>{const snaps=await dbAll("snapshots");return snaps.filter(s=>String(s.portfolio_id)===String(currentPF)).length>=30;}},
+  {id:"q_2lessons",     icon:"📖", title:"Élève assidu",           desc:"Lis 2 leçons → Page Progression, section Éducation financière",     xp:50,  cat:"Avancé",      check:()=>doneLessons.size>=2},
+  {id:"q_4lessons",     icon:"🎓", title:"Étudiant en finance",    desc:"Lis 4 leçons → Page Progression, section Éducation financière",     xp:100, cat:"Avancé",      check:()=>doneLessons.size>=4},
+  {id:"q_all_lessons",  icon:"🏅", title:"Diplômé Gestionary",     desc:"Termine toutes les leçons → Page Progression, section Éducation",   xp:250, cat:"Avancé",      check:()=>doneLessons.size>=LESSONS.length},
+  {id:"q_whatif",       icon:"🔮", title:"Scénariste",             desc:"Utilise la fonctionnalité What-If pour simuler",                     xp:60,  cat:"Avancé",      check:()=>document.getElementById("page-whatif")?.classList.contains("active")||false},
+  {id:"q_risk",         icon:"⚠️", title:"Conscient du risque",    desc:"Consulte l'onglet Risque pour analyser ton exposition",             xp:50,  cat:"Avancé",      check:()=>document.getElementById("page-risque")?.classList.contains("active")||false},
+  {id:"q_analyse",      icon:"🔬", title:"Analyste",               desc:"Consulte l'onglet Analyse pour explorer tes données",               xp:50,  cat:"Avancé",      check:()=>document.getElementById("page-analyse")?.classList.contains("active")||false},
+  {id:"q_historique",   icon:"📜", title:"Mémoire longue",         desc:"Consulte l'historique de ton patrimoine dans l'onglet Historique",  xp:40,  cat:"Avancé",      check:()=>document.getElementById("page-historique")?.classList.contains("active")||false},
 ];
 
 let xp=0, doneLessons=new Set();
