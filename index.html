@@ -1196,8 +1196,10 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
     </div>
   </div>
 </div>
+
+<!-- MODALS -->
+<div class="overlay" id="search-overlay">
   <div class="modal">
-    <div class="mhead"><h3>Ajouter un actif</h3><button class="mx" onclick="closeSearch()">✕</button></div>
     <div class="mbody">
       <div class="sbox"><span style="color:var(--t3)">⌕</span><input id="s-input" placeholder="Nom, ticker… AAPL, ACWI, Uranium…" oninput="doSearch(this.value)" autocomplete="off"></div>
       <div class="chips" id="filter-chips">
