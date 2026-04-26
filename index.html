@@ -2982,8 +2982,7 @@ async function loadExtDB(){
       }
     });
     dbLoaded = true;
-  }catch(e){ /* silencieux si db.json pas encore uploadé */ }
-  }catch(e){ console.warn("loadExtDB:", e); }
+  }catch(e){ /* silencieux */ }
 }
 let priceCache = {};
 
