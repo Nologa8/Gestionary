@@ -647,7 +647,11 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
   <div class="g3 adv-section">
     <div class="card"><div class="ct">Géographie</div><div class="bars" id="ov-geo"></div></div>
     <div class="card"><div class="ct">Secteurs</div><div class="bars" id="ov-sec"></div></div>
-    <div class="card"><div class="ct">Diagnostics <span class="tag" id="alert-tag">—</span></div><div class="alert-list" id="ov-alerts"></div></div>
+    <div class="card" style="cursor:pointer" onclick="goPage('analyse',document.querySelector('[data-page=analyse]'))">
+      <div class="ct">Score de Santé <span class="tag" id="health-tag">—</span></div>
+      <div id="ov-health-mini" style="margin-top:8px"></div>
+      <div class="alert-list" id="ov-alerts"></div>
+    </div>
   </div>
   <div class="card">
     <div class="sh" style="margin-bottom:0">
@@ -727,9 +731,62 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 
 <!-- ANALYSE -->
 <div class="page wrap" id="page-analyse">
-  <div class="sh"><div class="sh-title">Analyse géo & sectorielle</div></div>
-  <div class="g2 mb"><div class="card"><div class="ct">Pays — consolidé</div><div class="bars" id="an-geo"></div></div><div class="card"><div class="ct">Secteurs — consolidé</div><div class="bars" id="an-sec"></div></div></div>
-  <div class="g2"><div class="card"><div class="ct">MSCI ACWI — pays <span class="tag tag-pu">Jan 2026</span></div><div class="bars" id="an-acwi-p"></div></div><div class="card"><div class="ct">MSCI EM Asia — pays <span class="tag tag-pu">Jan 2026</span></div><div class="bars" id="an-em-p"></div></div></div>
+  <div class="sh"><div><div class="sh-title">Analyse & Santé</div><div class="sh-sub">Score de santé + comparaison vs indices</div></div></div>
+
+  <!-- Score de santé -->
+  <div class="card mb" id="health-score-card">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="position:relative;width:110px;height:110px;flex-shrink:0">
+        <canvas id="score-donut" width="110" height="110"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div id="score-val" style="font-family:var(--M);font-size:28px;font-weight:700;color:var(--am)">—</div>
+          <div style="font-size:9px;color:var(--t3)">/100</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div id="score-label" style="font-family:var(--D);font-size:18px;font-weight:700;margin-bottom:4px">—</div>
+        <div id="score-desc" style="font-size:11px;color:var(--t3);margin-bottom:12px">—</div>
+        <div id="score-bars" style="display:flex;flex-direction:column;gap:7px"></div>
+      </div>
+      <div style="flex:1;min-width:200px" id="score-actions"></div>
+    </div>
+  </div>
+
+  <!-- Comparaison vs indices -->
+  <div class="card mb">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <div>
+        <div style="font-family:var(--D);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Performance vs Indice de référence</div>
+        <div style="font-size:10px;color:var(--t3);margin-top:2px">Votre portfolio depuis votre premier investissement</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="bench-btns">
+        <button class="chip on" onclick="setBench('ACWI',this)">🌍 ACWI</button>
+        <button class="chip" onclick="setBench('SPY',this)">🇺🇸 S&P 500</button>
+        <button class="chip" onclick="setBench('QQQ',this)">💻 Nasdaq</button>
+        <button class="chip" onclick="setBench('CW8',this)">🇫🇷 CW8 PEA</button>
+      </div>
+    </div>
+    <div id="bench-kpis" class="g4 mb" style="margin-bottom:16px"></div>
+    <div style="position:relative">
+      <canvas id="bench-canvas" style="width:100%;height:200px"></canvas>
+    </div>
+    <div id="bench-x-labels" style="display:flex;justify-content:space-between;margin-top:6px;padding:0 12px"></div>
+    <div style="display:flex;gap:16px;margin-top:10px;font-size:10px;color:var(--t3)">
+      <span><span style="color:var(--am)">●</span> Votre portfolio</span>
+      <span id="bench-legend-label"><span style="color:var(--bl)">●</span> ACWI</span>
+      <span style="font-size:9px;color:var(--t3);margin-left:auto">* Performance simulée sur la base du rendement annuel moyen de l'indice</span>
+    </div>
+  </div>
+
+  <!-- Répartition détaillée -->
+  <div class="g2 mb">
+    <div class="card"><div class="ct">🌍 Pays — consolidé</div><div class="bars" id="an-geo"></div></div>
+    <div class="card"><div class="ct">🏭 Secteurs — consolidé</div><div class="bars" id="an-sec"></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><div class="ct">MSCI ACWI — pays <span class="tag tag-pu">Référence</span></div><div class="bars" id="an-acwi-p"></div></div>
+    <div class="card"><div class="ct">MSCI EM Asia — pays <span class="tag tag-pu">Référence</span></div><div class="bars" id="an-em-p"></div></div>
+  </div>
 </div>
 
 <!-- RISQUE -->
@@ -2419,6 +2476,8 @@ async function renderOverview(){
   renderBars("ov-geo",getZones().slice(0,7),getZones()[0]?.p);
   renderBars("ov-sec",consolidate(getSect).slice(0,7),consolidate(getSect)[0]?.p);
   renderOvAlerts();renderOvPos();
+  // Mini score dans overview
+  renderHealthScoreMini();
 }
 function renderKPIs(){
   const tot=totV(),inv=totI(),gain=tot-inv,perf=inv>0?gain/inv*100:0;
@@ -2735,11 +2794,308 @@ function runWhatIf(){
 // ═══════════════════════════════════════════════════════
 // ANALYSE & RISQUE
 // ═══════════════════════════════════════════════════════
+// Rendements annuels moyens des indices (approximations 10 ans)
+const BENCH_DATA = {
+  ACWI: {name:"MSCI ACWI",    annualReturn:0.098, color:"#6366f1"},
+  SPY:  {name:"S&P 500",      annualReturn:0.122, color:"#10b981"},
+  QQQ:  {name:"Nasdaq-100",   annualReturn:0.158, color:"#f97316"},
+  CW8:  {name:"Amundi CW8",   annualReturn:0.110, color:"#ec4899"},
+};
+let currentBench = "ACWI";
+
+function setBench(id, btn){
+  currentBench = id;
+  document.querySelectorAll('#bench-btns .chip').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  renderBenchmark();
+}
+
 function renderAnalyse(){
   const geo=consolidate(getPays);renderBars("an-geo",geo,geo[0]?.p);
   const sec=consolidate(getSect);renderBars("an-sec",sec,sec[0]?.p);
   renderBars("an-acwi-p",ACWI_P,ACWI_P[0].p);
   renderBars("an-em-p",EM_P,EM_P[0].p);
+  renderHealthScore();
+  renderBenchmark();
+}
+
+function renderHealthScoreMini(){
+  // Calcul rapide du score (copie légère)
+  const tot=totV(), inv=totI(), perf=inv>0?(tot-inv)/inv*100:0;
+  const zones=getZones(), sects=consolidate(getSect);
+  const us=zones.find(z=>z.n.includes("US"))?.p||0;
+  const topSect=sects[0]?.p||0;
+  const nbPos=positions.length;
+  const hasRef=positions.some(p=>["GOLD","GLD","IAU","TLT","AGG","BND"].includes(p.ticker));
+  const hasTarget=Object.keys(targets).length>0;
+
+  const s1 = (() => { const hhi=zones.reduce((s,z)=>s+(z.p/100)**2,0); return Math.round(Math.max(0,Math.min(100,(1-hhi)*140))); })();
+  const s2 = (() => { if(!sects.length) return 30; const hhi=sects.reduce((s,x)=>s+(x.p/100)**2,0); return Math.round(Math.max(0,Math.min(100,(1-hhi)*160))); })();
+  const s3 = nbPos===0?0:nbPos<3?25:nbPos<5?50:nbPos<8?70:nbPos<12?88:100;
+  const s4 = (positions.some(p=>["GOLD","GLD","IAU","SLV"].includes(p.ticker))?40:0)+(positions.some(p=>["TLT","AGG","BND"].includes(p.ticker))?40:0)+(patriItems.some(p=>p.categorie==="liquidites"&&p.valeur>0)?20:0);
+  const s5 = (hasTarget?60:0)+(parseFloat(document.getElementById("obj-input")?.value||"0")>0?40:0);
+  const s6 = inv<500?50:perf>=9.8?100:perf>=0?60:perf>=-5?40:20;
+  const score = Math.round((s1*20+s2*20+s3*15+s4*15+s5*15+s6*15)/100);
+
+  const color=score>=85?"var(--gn)":score>=70?"var(--am)":score>=55?"#f97316":"var(--rd)";
+  const label=score>=85?"Excellent":score>=70?"Solide":score>=55?"Correct":score>=40?"À améliorer":"Fragile";
+  const tag=document.getElementById("health-tag");
+  if(tag){tag.textContent=score+"/100";tag.style.cssText=`background:${color}22;color:${color};border:1px solid ${color}44`;}
+  const mini=document.getElementById("ov-health-mini");
+  if(mini) mini.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="position:relative;width:46px;height:46px;flex-shrink:0">
+        <svg viewBox="0 0 46 46" style="transform:rotate(-90deg)">
+          <circle cx="23" cy="23" r="18" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+          <circle cx="23" cy="23" r="18" fill="none" stroke="${color}" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="${score/100*113} 113"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--M);font-size:11px;font-weight:700;color:${color}">${score}</div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600">${label}</div>
+        <div style="font-size:9px;color:var(--t3)">Voir détail → Analyse</div>
+      </div>
+    </div>`;
+}
+
+function renderHealthScore(){
+  const tot=totV(), inv=totI(), perf=inv>0?(tot-inv)/inv*100:0;
+  const zones=getZones(), sects=consolidate(getSect);
+  const us=zones.find(z=>z.n.includes("US"))?.p||0;
+  const itSect=sects.find(s=>s.n==="IT")?.p||0;
+  const topSect=sects[0]?.p||0;
+  const nbPos=positions.length;
+
+  // ── Critères (chacun de 0 à 100) ─────────────────────────────────────────
+  const criteres = [
+    {
+      id:"diversif_geo", label:"Diversification géo.",
+      score: (() => {
+        const zones2=getZones();
+        if(zones2.length===0) return 0;
+        const hhi = zones2.reduce((s,z)=>s+(z.p/100)**2,0); // indice Herfindahl
+        return Math.round(Math.max(0, Math.min(100, (1-hhi)*140)));
+      })(),
+      weight:20,
+      tip: us>70 ? `USA trop dominant (${us.toFixed(0)}%) — ajoutez Europe/Asie` : null
+    },
+    {
+      id:"diversif_sect", label:"Équilibre sectoriel",
+      score: (() => {
+        if(sects.length===0) return 30;
+        const hhi = sects.reduce((s,x)=>s+(x.p/100)**2,0);
+        return Math.round(Math.max(0, Math.min(100, (1-hhi)*160)));
+      })(),
+      weight:20,
+      tip: topSect>45 ? `${sects[0]?.n} surreprésenté (${topSect.toFixed(0)}%)` : null
+    },
+    {
+      id:"nb_positions", label:"Nombre de positions",
+      score: nbPos===0?0 : nbPos<3?25 : nbPos<5?50 : nbPos<8?70 : nbPos<12?88 : 100,
+      weight:15,
+      tip: nbPos<5 ? `${nbPos} position(s) — visez au moins 5 actifs décorrélés` : null
+    },
+    {
+      id:"valeur_refuge", label:"Valeur refuge",
+      score: (() => {
+        const hasGold = positions.some(p=>["GOLD","GLD","IAU","SLV","PPLT","SGOL"].includes(p.ticker));
+        const hasObl  = positions.some(p=>["TLT","AGG","BND","IEF","LQD","BNDX","VGIT","VGLT"].includes(p.ticker));
+        const hasCash = patriItems.some(p=>p.categorie==="liquidites" && p.valeur>0);
+        return (hasGold?40:0)+(hasObl?40:0)+(hasCash?20:0);
+      })(),
+      weight:15,
+      tip: "Or, obligations ou liquidités réduisent la volatilité du portefeuille"
+    },
+    {
+      id:"rebalancing", label:"Stratégie définie",
+      score: (() => {
+        const hasTargets = Object.keys(targets).length>0;
+        const hasObjectif = parseFloat(document.getElementById("obj-input")?.value||"0")>0;
+        return (hasTargets?60:0)+(hasObjectif?40:0);
+      })(),
+      weight:15,
+      tip: Object.keys(targets).length===0 ? "Configurez vos cibles dans Rebalancing" : null
+    },
+    {
+      id:"performance", label:"Performance vs marché",
+      score: (() => {
+        if(inv<500) return 50; // pas assez de données
+        const benchAnnual = BENCH_DATA.ACWI.annualReturn;
+        // Estimer la durée investie (snapshots ou fallback 1 an)
+        return perf >= benchAnnual*100*1.1 ? 100
+             : perf >= benchAnnual*100*0.9 ? 80
+             : perf >= 0 ? 60
+             : perf >= -5 ? 40 : 20;
+      })(),
+      weight:15,
+      tip: perf < 0 ? `Perf. négative (${perf.toFixed(1)}%) — vérifiez votre allocation` : null
+    },
+  ];
+
+  const score = Math.round(
+    criteres.reduce((s,c)=> s + c.score * c.weight, 0) /
+    criteres.reduce((s,c)=> s + c.weight, 0)
+  );
+
+  const label = score>=85?"🌟 Excellent":score>=70?"✅ Solide":score>=55?"📊 Correct":score>=40?"⚠️ À améliorer":"🔴 Fragile";
+  const desc  = score>=85?"Votre portfolio est bien construit et diversifié."
+               :score>=70?"Bonne base, quelques optimisations possibles."
+               :score>=55?"Potentiel d'amélioration significatif."
+               :score>=40?"Plusieurs points critiques à corriger."
+               :"Votre portfolio nécessite une restructuration.";
+  const color = score>=85?"#10b981":score>=70?"#f59e0b":score>=55?"#f97316":score>=40?"#ef4444":"#dc2626";
+
+  // Donut canvas
+  const canvas = document.getElementById("score-donut");
+  if(canvas){
+    const ctx=canvas.getContext("2d"), dpr=window.devicePixelRatio||1;
+    canvas.width=110*dpr; canvas.height=110*dpr; ctx.scale(dpr,dpr);
+    const cx=55,cy=55,r=42,stroke=10;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.strokeStyle="rgba(255,255,255,0.06)";ctx.lineWidth=stroke;ctx.stroke();
+    const ang = -Math.PI/2;
+    ctx.beginPath();ctx.arc(cx,cy,r,ang,ang+(score/100)*Math.PI*2);
+    ctx.strokeStyle=color;ctx.lineWidth=stroke;ctx.lineCap="round";ctx.stroke();
+  }
+
+  const sv=document.getElementById("score-val"); if(sv) sv.innerHTML=`<span style="color:${color}">${score}</span>`;
+  const sl=document.getElementById("score-label"); if(sl) sl.textContent=label;
+  const sd=document.getElementById("score-desc"); if(sd) sd.textContent=desc;
+
+  // Barres des critères
+  const sb=document.getElementById("score-bars");
+  if(sb) sb.innerHTML=criteres.map(c=>{
+    const col=c.score>=75?"var(--gn)":c.score>=50?"var(--am)":"var(--rd)";
+    return `<div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--t3);margin-bottom:3px">
+        <span>${c.label}</span><span style="font-family:var(--M);color:${col}">${c.score}/100</span>
+      </div>
+      <div class="bar-track" style="height:5px">
+        <div class="bar-fill" style="width:${c.score}%;background:${col};transition:width 0.6s ease"></div>
+      </div>
+    </div>`;
+  }).join("");
+
+  // Actions prioritaires
+  const sa=document.getElementById("score-actions");
+  const tips=criteres.filter(c=>c.tip&&c.score<75).sort((a,b)=>a.score-b.score).slice(0,3);
+  if(sa) sa.innerHTML=`
+    <div style="font-family:var(--D);font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
+      🎯 Actions prioritaires
+    </div>
+    ${tips.length===0
+      ? `<div style="font-size:11px;color:var(--gn)">✓ Aucun point critique détecté !</div>`
+      : tips.map(t=>`<div style="display:flex;gap:8px;padding:8px;background:var(--s2);border-radius:6px;margin-bottom:6px;font-size:10px;color:var(--t2)">
+          <span>${t.score<40?"🔴":t.score<60?"🟡":"🟢"}</span>
+          <span>${t.tip}</span>
+        </div>`).join("")}`;
+}
+
+// ── COMPARAISON VS INDICE ─────────────────────────────────────────────────────
+async function renderBenchmark(){
+  const bench = BENCH_DATA[currentBench];
+  const lbl = document.getElementById("bench-legend-label");
+  if(lbl) lbl.innerHTML=`<span style="color:${bench.color}">●</span> ${bench.name}`;
+
+  // Récupérer les snapshots
+  const all = await dbAll("snapshots");
+  const snaps = all.filter(s=>String(s.portfolio_id)===String(currentPF))
+                   .sort((a,b)=>a.date.localeCompare(b.date));
+
+  const kpis = document.getElementById("bench-kpis");
+  const canvas = document.getElementById("bench-canvas");
+  if(!snaps.length){
+    if(kpis) kpis.innerHTML=`<div class="kpi"><div class="kpi-lbl">Données</div><div class="kpi-val">—</div><div class="kpi-sub">Pas encore de snapshots</div></div>`;
+    return;
+  }
+
+  const first = snaps[0], last = snaps[snaps.length-1];
+  const nbJours = Math.max(1, (new Date(last.date)-new Date(first.date))/(1000*86400));
+  const nbAns = nbJours/365;
+
+  // Perf portfolio
+  const perfPort = first.total_invested>0 ? (last.total_value-first.total_invested)/first.total_invested*100 : 0;
+  const perfPortAnn = nbAns>0.1 ? (Math.pow(1+perfPort/100, 1/nbAns)-1)*100 : perfPort;
+
+  // Perf indice simulée sur la même période
+  const perfBench = (Math.pow(1+bench.annualReturn, nbAns)-1)*100;
+  const diff = perfPort - perfBench;
+
+  // KPIs
+  if(kpis) kpis.innerHTML=`
+    <div class="kpi kpi-am"><div class="kpi-lbl">Votre perf. (période)</div><div class="kpi-val am">${perfPort>=0?"+":""}${perfPort.toFixed(2)}%</div><div class="kpi-sub">${perfPortAnn>=0?"+":""}${perfPortAnn.toFixed(1)}%/an annualisé</div></div>
+    <div class="kpi" style="background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.15)"><div class="kpi-lbl">${bench.name} (période)</div><div class="kpi-val" style="color:${bench.color}">${perfBench>=0?"+":""}${perfBench.toFixed(2)}%</div><div class="kpi-sub">${(bench.annualReturn*100).toFixed(1)}%/an historique</div></div>
+    <div class="kpi ${diff>=0?"kpi-gn":"kpi-rd"}"><div class="kpi-lbl">Écart (alpha)</div><div class="kpi-val ${diff>=0?"gn":"rd"}">${diff>=0?"+":""}${diff.toFixed(2)}%</div><div class="kpi-sub">${diff>=0?"✓ Vous battez l'indice":"⚠ L'indice vous dépasse"}</div></div>
+    <div class="kpi kpi-bl"><div class="kpi-lbl">Durée de suivi</div><div class="kpi-val bl">${nbJours<30?nbJours+" j":nbJours<365?Math.round(nbJours/30)+" mois":nbAns.toFixed(1)+" ans"}</div><div class="kpi-sub">${snaps.length} snapshots</div></div>`;
+
+  // Graphique comparaison
+  if(!canvas) return;
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement?.offsetWidth||600, H=200;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d"); ctx.scale(dpr,dpr);
+
+  // Calculer les séries normalisées à 100 au départ
+  const portSerie = snaps.map(s=>({
+    date:s.date,
+    val: first.total_invested>0 ? 100*(1+(s.total_value-first.total_invested)/first.total_invested) : 100
+  }));
+
+  const benchSerie = snaps.map((s,i)=>{
+    const j = Math.max(0,(new Date(s.date)-new Date(first.date))/(1000*86400));
+    return {date:s.date, val:100*Math.pow(1+bench.annualReturn, j/365)};
+  });
+
+  const allVals=[...portSerie.map(x=>x.val),...benchSerie.map(x=>x.val)];
+  const minV=Math.min(...allVals)*0.97, maxV=Math.max(...allVals)*1.03;
+  const pad={t:10,r:12,b:10,l:12};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  const tx=i=>pad.l+(i/(snaps.length-1||1))*pw;
+  const ty=v=>pad.t+(1-(v-minV)/(maxV-minV))*ph;
+
+  // Grille
+  ctx.strokeStyle="rgba(255,255,255,0.04)"; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+i*(ph/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();}
+
+  // Ligne indice
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(benchSerie[0].val));
+  benchSerie.forEach((s,i)=>ctx.lineTo(tx(i),ty(s.val)));
+  ctx.strokeStyle=bench.color+"99"; ctx.lineWidth=1.5; ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Ligne portfolio
+  const portColor = diff>=0?"#f59e0b":"#f87171";
+  const gradP=ctx.createLinearGradient(0,pad.t,0,H);
+  gradP.addColorStop(0,diff>=0?"rgba(245,158,11,0.15)":"rgba(248,113,113,0.12)");
+  gradP.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(portSerie[0].val));
+  portSerie.forEach((s,i)=>ctx.lineTo(tx(i),ty(s.val)));
+  ctx.lineTo(tx(snaps.length-1),H); ctx.lineTo(tx(0),H); ctx.closePath();
+  ctx.fillStyle=gradP; ctx.fill();
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(portSerie[0].val));
+  portSerie.forEach((s,i)=>ctx.lineTo(tx(i),ty(s.val)));
+  ctx.strokeStyle=portColor; ctx.lineWidth=2; ctx.stroke();
+
+  // Point final portfolio
+  const lx=tx(snaps.length-1), ly=ty(portSerie[portSerie.length-1].val);
+  ctx.beginPath();ctx.arc(lx,ly,4,0,Math.PI*2);ctx.fillStyle=portColor;ctx.fill();
+  ctx.beginPath();ctx.arc(lx,ly,7,0,Math.PI*2);ctx.fillStyle=portColor+"40";ctx.fill();
+
+  // Labels X
+  const xl=document.getElementById("bench-x-labels");
+  if(xl&&snaps.length>=2){
+    const count=Math.min(5,snaps.length);
+    const step=Math.floor((snaps.length-1)/(count-1));
+    xl.innerHTML="";
+    for(let i=0;i<count;i++){
+      const idx=Math.min(i*step,snaps.length-1);
+      const p=snaps[idx].date.split("-");
+      const span=document.createElement("span");
+      span.textContent=`${p[2]}/${p[1]}/${p[0].slice(2)}`;
+      span.style.cssText="font-size:9px;color:var(--t3);font-family:var(--M)";
+      xl.appendChild(span);
+    }
+  }
 }
 function renderRisque(){
   const tot=totV(),inv=totI(),vol=portVol(),gain=tot-inv,perf=inv>0?gain/inv*100:0;
