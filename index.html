@@ -4235,16 +4235,13 @@ async function loadExtDB(){
   try{
     const r = await fetch(DB_URL);
     if(!r.ok) return;
-    const ext = await r.json();
-    let added = 0;
-    ext.forEach(a => {
-      if(!DB.find(d => d.t === a.t)){
-        DB.push(a);
-        added++;
-      }
-    });
+    const text = await r.text();
+    if(!text.trim().startsWith('[')) return; // pas du JSON valide
+    const ext = JSON.parse(text);
+    if(!Array.isArray(ext)) return;
+    ext.forEach(a => { if(!DB.find(d=>d.t===a.t)) DB.push(a); });
     dbLoaded = true;
-  }catch(e){ /* silencieux */ }
+  }catch(e){ /* silencieux — db.json pas encore uploadé */ }
 }
 let priceCache = {};
 
