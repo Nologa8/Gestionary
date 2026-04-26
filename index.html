@@ -741,16 +741,49 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 <!-- HISTORIQUE -->
 <div class="page wrap" id="page-historique">
   <div class="sh">
-    <div><div class="sh-title">Historique</div><div class="sh-sub">Snapshots quotidiens automatiques</div></div>
+    <div><div class="sh-title">Historique</div><div class="sh-sub">Évolution de ton patrimoine</div></div>
     <div style="display:flex;gap:6px">
-      <button class="btn btn-ghost btn-sm" onclick="loadHist(30)">30j</button>
-      <button class="btn btn-ghost btn-sm" onclick="loadHist(90)">90j</button>
-      <button class="btn btn-ghost btn-sm" onclick="loadHist(365)">1an</button>
-      <button class="btn btn-ghost btn-sm" onclick="loadHist(9999)">Tout</button>
+      <button class="btn btn-ghost btn-sm hist-btn active" onclick="loadHist(30,this)">30j</button>
+      <button class="btn btn-ghost btn-sm hist-btn" onclick="loadHist(90,this)">90j</button>
+      <button class="btn btn-ghost btn-sm hist-btn" onclick="loadHist(365,this)">1an</button>
+      <button class="btn btn-ghost btn-sm hist-btn" onclick="loadHist(9999,this)">Tout</button>
     </div>
   </div>
-  <div class="card mb"><div class="ct">Courbe</div><canvas id="big-hist" style="width:100%;height:200px"></canvas></div>
-  <div class="card"><div class="ct">Snapshots</div><div class="scroll"><table class="tbl"><thead><tr><th>Date</th><th>Valeur</th><th>Investi</th><th>+/-</th><th>Perf</th></tr></thead><tbody id="hist-body"></tbody></table></div></div>
+
+  <!-- KPIs -->
+  <div class="g4 mb" id="hist-kpis"></div>
+
+  <!-- Graphique -->
+  <div class="card mb" style="padding:20px 20px 12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-family:var(--D);font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Évolution du patrimoine</div>
+        <div id="hist-hover-val" style="font-family:var(--M);font-size:22px;font-weight:700;color:var(--am);margin-top:2px">—</div>
+        <div id="hist-hover-date" style="font-size:10px;color:var(--t3)">Survole la courbe</div>
+      </div>
+      <div style="display:flex;gap:12px;font-size:10px;color:var(--t3)">
+        <span><span style="color:var(--am)">●</span> Valeur</span>
+        <span><span style="color:rgba(99,102,241,0.6)">- -</span> Investi</span>
+      </div>
+    </div>
+    <div style="position:relative">
+      <canvas id="big-hist" style="width:100%;height:220px;cursor:crosshair"></canvas>
+      <div id="hist-tooltip" style="position:absolute;background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:8px 12px;font-size:11px;pointer-events:none;display:none;z-index:10;min-width:140px"></div>
+    </div>
+    <!-- Axe X labels -->
+    <div id="hist-x-labels" style="display:flex;justify-content:space-between;margin-top:6px;padding:0 12px"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <div class="ct">📋 Snapshots</div>
+    <div class="scroll">
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Valeur</th><th>Investi</th><th>+/- €</th><th>Perf</th></tr></thead>
+        <tbody id="hist-body"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- PROGRESSION -->
@@ -2221,7 +2254,7 @@ async function renderPage(id){
   else if(id==="rebalancing")renderRebalancing();
   else if(id==="analyse")renderAnalyse();
   else if(id==="risque")renderRisque();
-  else if(id==="historique")await loadHist(365);
+  else if(id==="historique"){loadHist(30, document.querySelector('.hist-btn'));}
   else if(id==="dividendes")if(typeof loadDivs==="function")await loadDivs();
   else if(id==="journal")await loadJournal();
   else if(id==="patrimoine"){
@@ -2328,25 +2361,133 @@ function renderDonut(){
   const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",cx);t.setAttribute("y",cy+3);t.setAttribute("text-anchor","middle");t.setAttribute("fill","#9090a8");t.setAttribute("font-size","8");t.setAttribute("font-family","Inter,sans-serif");t.textContent=data.length+" actifs";svg.appendChild(t);
   leg.innerHTML=data.map((x,i)=>`<div class="dl-row"><div class="dl-dot" style="background:${CLRS[i%CLRS.length]}"></div><span class="dl-name">${x.n}</span><span class="dl-pct">${x.p.toFixed(1)}%</span></div>`).join("");
 }
-async function drawHist(canvasId,days,height){
-  const canvas=document.getElementById(canvasId);if(!canvas)return;
-  const all=await dbAll("snapshots");
-  const snaps=all.filter(s=>s.portfolio_id===currentPF).sort((a,b)=>a.date.localeCompare(b.date));
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
-  const data=snaps.filter(s=>new Date(s.date)>=cutoff);
-  const dpr=window.devicePixelRatio||1,W=canvas.offsetWidth||400,H=height||110;
-  canvas.width=W*dpr;canvas.height=H*dpr;canvas.style.width=W+"px";canvas.style.height=H+"px";
-  const ctx=canvas.getContext("2d");ctx.scale(dpr,dpr);
-  if(data.length<2){ctx.fillStyle="rgba(255,255,255,0.02)";ctx.fillRect(0,0,W,H);ctx.fillStyle="#52526a";ctx.font="11px Inter";ctx.textAlign="center";ctx.fillText("Les données s'accumulent quotidiennement",W/2,H/2);return;}
-  const vals=data.map(s=>s.total_value),invs=data.map(s=>s.total_invested);
-  const all2=[...vals,...invs];const minV=Math.min(...all2)*0.97,maxV=Math.max(...all2)*1.03;
-  const tx=i=>12+(i/(data.length-1))*(W-24);const ty=v=>H-10-(v-minV)/(maxV-minV)*(H-20);
-  ctx.beginPath();ctx.moveTo(tx(0),ty(invs[0]));invs.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));
-  ctx.strokeStyle="rgba(99,102,241,0.35)";ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(tx(0),ty(vals[0]));vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));ctx.lineTo(tx(data.length-1),H);ctx.lineTo(tx(0),H);ctx.closePath();
-  const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,"rgba(245,158,11,0.15)");gr.addColorStop(1,"rgba(245,158,11,0)");ctx.fillStyle=gr;ctx.fill();
-  ctx.beginPath();ctx.moveTo(tx(0),ty(vals[0]));vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));ctx.strokeStyle="#f59e0b";ctx.lineWidth=1.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(tx(data.length-1),ty(vals[vals.length-1]),3,0,Math.PI*2);ctx.fillStyle="#f59e0b";ctx.fill();
+async function drawHist(canvasId, data){
+  const canvas=document.getElementById(canvasId); if(!canvas)return;
+  const tooltip=document.getElementById("hist-tooltip");
+  const hoverVal=document.getElementById("hist-hover-val");
+  const hoverDate=document.getElementById("hist-hover-date");
+  const xLabels=document.getElementById("hist-x-labels");
+
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.offsetWidth||600;
+  const H=220;
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  const ctx=canvas.getContext("2d"); ctx.scale(dpr,dpr);
+
+  if(!data||data.length<2){
+    ctx.fillStyle="rgba(255,255,255,0.02)"; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle="#52526a"; ctx.font="12px Inter"; ctx.textAlign="center";
+    ctx.fillText("Les données s'accumulent quotidiennement — reviens demain !", W/2, H/2);
+    if(hoverVal) hoverVal.textContent="—";
+    return;
+  }
+
+  const pad={t:10,r:12,b:10,l:12};
+  const pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  const vals=data.map(s=>s.total_value);
+  const invs=data.map(s=>s.total_invested);
+  const allV=[...vals,...invs];
+  const minV=Math.min(...allV)*0.985, maxV=Math.max(...allV)*1.015;
+  const tx=i=>pad.l+(i/(data.length-1))*pw;
+  const ty=v=>pad.t+(1-(v-minV)/(maxV-minV))*ph;
+
+  // Grille horizontale légère
+  ctx.strokeStyle="rgba(255,255,255,0.04)"; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+i*(ph/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pw,y); ctx.stroke();
+  }
+
+  // Ligne investi (pointillée)
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(invs[0]));
+  invs.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));
+  ctx.strokeStyle="rgba(99,102,241,0.4)"; ctx.lineWidth=1.5; ctx.setLineDash([5,4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Aire sous la courbe valeur
+  const isPositive=vals[vals.length-1]>=invs[invs.length-1];
+  const grad=ctx.createLinearGradient(0,pad.t,0,H);
+  grad.addColorStop(0,isPositive?"rgba(245,158,11,0.18)":"rgba(248,113,113,0.15)");
+  grad.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(vals[0]));
+  vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));
+  ctx.lineTo(tx(data.length-1),H); ctx.lineTo(tx(0),H); ctx.closePath();
+  ctx.fillStyle=grad; ctx.fill();
+
+  // Courbe valeur
+  ctx.beginPath(); ctx.moveTo(tx(0),ty(vals[0]));
+  vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));
+  ctx.strokeStyle=isPositive?"#f59e0b":"#f87171"; ctx.lineWidth=2; ctx.stroke();
+
+  // Point final
+  const lx=tx(data.length-1), ly=ty(vals[vals.length-1]);
+  ctx.beginPath(); ctx.arc(lx,ly,4,0,Math.PI*2);
+  ctx.fillStyle=isPositive?"#f59e0b":"#f87171"; ctx.fill();
+  ctx.beginPath(); ctx.arc(lx,ly,7,0,Math.PI*2);
+  ctx.fillStyle=isPositive?"rgba(245,158,11,0.2)":"rgba(248,113,113,0.2)"; ctx.fill();
+
+  // Initialiser hoverVal avec la dernière valeur
+  if(hoverVal) hoverVal.textContent=fmt(vals[vals.length-1])+" €";
+  if(hoverDate) hoverDate.textContent=data[data.length-1].date;
+
+  // Labels axe X
+  if(xLabels){
+    const count=Math.min(5,data.length);
+    const step=Math.floor((data.length-1)/(count-1));
+    xLabels.innerHTML="";
+    for(let i=0;i<count;i++){
+      const idx=Math.min(i*step,data.length-1);
+      const d=data[idx].date;
+      const parts=d.split("-");
+      const label=`${parts[2]}/${parts[1]}`;
+      const span=document.createElement("span");
+      span.textContent=label;
+      span.style.cssText="font-size:9px;color:var(--t3);font-family:var(--M)";
+      xLabels.appendChild(span);
+    }
+  }
+
+  // Tooltip interactif
+  canvas.onmousemove=function(e){
+    const rect=canvas.getBoundingClientRect();
+    const mx=e.clientX-rect.left;
+    const idx=Math.round((mx-pad.l)/pw*(data.length-1));
+    if(idx<0||idx>=data.length)return;
+    const s=data[idx];
+    const g=s.total_value-s.total_invested;
+    const pf=s.total_invested>0?g/s.total_invested*100:0;
+    if(hoverVal) hoverVal.textContent=fmt(s.total_value)+" €";
+    if(hoverDate) hoverDate.textContent=s.date;
+    if(tooltip){
+      tooltip.style.display="block";
+      const tipX=tx(idx);
+      const tipLeft=tipX>W-160?tipX-155:tipX+12;
+      tooltip.style.left=tipLeft+"px";
+      tooltip.style.top=Math.max(8,ty(s.total_value)-30)+"px";
+      tooltip.innerHTML=`<div style="font-family:var(--M);font-weight:700;color:var(--am)">${fmt(s.total_value)} €</div>
+        <div style="color:var(--t3);margin-top:2px">${s.date}</div>
+        <div style="margin-top:4px;color:${g>=0?"var(--gn)":"var(--rd)"}">${g>=0?"+":""}${fmt(g)} € (${pf>=0?"+":""}${pf.toFixed(2)}%)</div>`;
+    }
+    // Ligne verticale
+    ctx.clearRect(0,0,W,H);
+    // Redessiner (juste les éléments statiques)
+    ctx.strokeStyle="rgba(255,255,255,0.04)"; ctx.lineWidth=1;
+    for(let i=0;i<=4;i++){const y=pad.t+i*(ph/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+pw,y);ctx.stroke();}
+    ctx.beginPath();ctx.moveTo(tx(0),ty(invs[0]));invs.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));
+    ctx.strokeStyle="rgba(99,102,241,0.4)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(tx(0),ty(vals[0]));vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));ctx.lineTo(tx(data.length-1),H);ctx.lineTo(tx(0),H);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+    ctx.beginPath();ctx.moveTo(tx(0),ty(vals[0]));vals.forEach((v,i)=>ctx.lineTo(tx(i),ty(v)));ctx.strokeStyle=isPositive?"#f59e0b":"#f87171";ctx.lineWidth=2;ctx.stroke();
+    // Crosshair
+    const cx=tx(idx),cy=ty(s.total_value);
+    ctx.beginPath();ctx.moveTo(cx,pad.t);ctx.lineTo(cx,H);ctx.strokeStyle="rgba(255,255,255,0.1)";ctx.lineWidth=1;ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fillStyle="#fff";ctx.fill();
+    ctx.beginPath();ctx.arc(cx,cy,3,0,Math.PI*2);ctx.fillStyle=isPositive?"#f59e0b":"#f87171";ctx.fill();
+  };
+  canvas.onmouseleave=function(){
+    if(tooltip)tooltip.style.display="none";
+    if(hoverVal)hoverVal.textContent=fmt(vals[vals.length-1])+" €";
+    if(hoverDate)hoverDate.textContent=data[data.length-1].date;
+  };
 }
 function renderOvAlerts(){
   const zones=getZones(),sects=consolidate(getSect);
@@ -2483,13 +2624,50 @@ function renderRisque(){
 // ═══════════════════════════════════════════════════════
 // HISTORIQUE
 // ═══════════════════════════════════════════════════════
-async function loadHist(days){
-  await drawHist("big-hist",days,200);
-  const all=await dbAll("snapshots");
-  const snaps=all.filter(s=>s.portfolio_id===currentPF).sort((a,b)=>b.date.localeCompare(a.date));
-  const cutoff=new Date();cutoff.setDate(cutoff.getDate()-days);
-  const data=snaps.filter(s=>new Date(s.date)>=cutoff||days>999);
-  document.getElementById("hist-table").innerHTML=data.map(s=>{const g=s.total_value-s.total_invested,pf=s.total_invested>0?g/s.total_invested*100:0;return `<tr><td style="font-family:var(--mono);font-size:10px">${s.date}</td><td style="font-family:var(--mono);font-weight:600">${fmt(s.total_value)} €</td><td style="font-family:var(--mono);color:var(--t3)">${fmt(s.total_invested)} €</td><td style="font-family:var(--mono);color:${g>=0?"var(--green)":"var(--red)"}">${g>=0?"+":""}${fmt(g)} €</td><td><span class="badge ${pf>=0?"b-pos":"b-neg"}">${fmtP(pf)}</span></td></tr>`;}).join("")||`<tr><td colspan="5" class="no-data">Pas encore de snapshots — reviens demain !</td></tr>`;
+async function loadHist(days, btn){
+  // Active button
+  document.querySelectorAll('.hist-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+
+  const all = await dbAll("snapshots");
+  const snaps = all.filter(s=>String(s.portfolio_id)===String(currentPF)).sort((a,b)=>a.date.localeCompare(b.date));
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-days);
+  const data = days>999 ? snaps : snaps.filter(s=>new Date(s.date)>=cutoff);
+
+  // ── KPIs ──
+  const kpis = document.getElementById("hist-kpis");
+  if(kpis && data.length>=1){
+    const first=data[0], last=data[data.length-1];
+    const gain=last.total_value-last.total_invested;
+    const perf=last.total_invested>0?gain/last.total_invested*100:0;
+    const periodGain=data.length>=2?last.total_value-first.total_value:0;
+    const periodPerf=data.length>=2&&first.total_value>0?periodGain/first.total_value*100:0;
+    const maxVal=Math.max(...data.map(s=>s.total_value));
+    const drawdown=maxVal>0?(last.total_value-maxVal)/maxVal*100:0;
+    const dailyChanges=data.slice(1).map((s,i)=>s.total_value-data[i].total_value);
+    const bestDay=dailyChanges.length?Math.max(...dailyChanges):0;
+    kpis.innerHTML=`
+      <div class="kpi kpi-am"><div class="kpi-lbl">Valeur actuelle</div><div class="kpi-val am">${fmt(last.total_value)} €</div><div class="kpi-sub">Investi : ${fmt(last.total_invested)} €</div></div>
+      <div class="kpi ${gain>=0?"kpi-gn":"kpi-rd"}"><div class="kpi-lbl">Plus-value totale</div><div class="kpi-val ${gain>=0?"gn":"rd"}">${gain>=0?"+":""}${fmt(gain)} €</div><div class="kpi-sub">${perf>=0?"+":""}${perf.toFixed(2)}% de rendement</div></div>
+      <div class="kpi ${periodGain>=0?"kpi-bl":"kpi-rd"}"><div class="kpi-lbl">Évolution période</div><div class="kpi-val ${periodGain>=0?"bl":"rd"}">${periodGain>=0?"+":""}${fmt(periodGain)} €</div><div class="kpi-sub">${periodPerf>=0?"+":""}${periodPerf.toFixed(2)}% sur la période</div></div>
+      <div class="kpi kpi-pu"><div class="kpi-lbl">Snapshots</div><div class="kpi-val pu">${data.length}</div><div class="kpi-sub">Meilleure journée : +${fmt(bestDay)} €</div></div>`;
+  }
+
+  // ── Graphique ──
+  await drawHist("big-hist", data);
+
+  // ── Table ──
+  const tbody = document.getElementById("hist-body");
+  if(tbody) tbody.innerHTML=[...data].reverse().map(s=>{
+    const g=s.total_value-s.total_invested, pf=s.total_invested>0?g/s.total_invested*100:0;
+    return `<tr>
+      <td style="font-family:var(--M);font-size:10px">${s.date}</td>
+      <td style="font-family:var(--M);font-weight:600">${fmt(s.total_value)} €</td>
+      <td style="font-family:var(--M);color:var(--t3)">${fmt(s.total_invested)} €</td>
+      <td style="font-family:var(--M);color:${g>=0?"var(--gn)":"var(--rd)"}">${g>=0?"+":""}${fmt(g)} €</td>
+      <td><span class="badge ${pf>=0?"b-pos":"b-neg"}">${pf>=0?"+":""}${pf.toFixed(2)}%</span></td>
+    </tr>`;
+  }).join("") || `<tr><td colspan="5" class="no-data">Pas encore de snapshots</td></tr>`;
 }
 
 // ═══════════════════════════════════════════════════════
