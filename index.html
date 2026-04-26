@@ -1852,6 +1852,7 @@ async function loadQuests(){
 }
 
 async function checkQuests(){
+  const isFirstRun = completedQuests.size === 0;
   let newlyCompleted = [];
   for(const q of QUESTS){
     if(completedQuests.has(q.id)) continue;
@@ -1859,16 +1860,16 @@ async function checkQuests(){
     try { done = await Promise.resolve(q.check()); } catch(e){}
     if(done){
       completedQuests.add(q.id);
-      newlyCompleted.push(q);
+      if(!isFirstRun) newlyCompleted.push(q); // XP seulement si pas première exécution
     }
   }
-  if(newlyCompleted.length){
+  if(completedQuests.size > 0){
     await setSetting("completed_quests", JSON.stringify([...completedQuests]));
-    for(const q of newlyCompleted){
-      await addXP(q.xp, `Quête : ${q.title} 🏅`);
-    }
-    if(currentPage === "progression") renderProgression();
   }
+  for(const q of newlyCompleted){
+    await addXP(q.xp, `Quête : ${q.title} 🏅`);
+  }
+  if(newlyCompleted.length > 0 && currentPage === "progression") renderProgression();
 }
 
 
@@ -2721,8 +2722,10 @@ function renderEducation(){
 }
 function openLesson(id){
   const l=LESSONS.find(x=>x.id===id);if(!l)return;curLesson=id;
-  document.getElementById("lesson-modal-title").textContent=l.icon+" "+l.title;
-  document.getElementById("lesson-modal-body").innerHTML=l.content;
+  const title=document.getElementById("lesson-title")||document.getElementById("lesson-modal-title");
+  const body=document.getElementById("lesson-body")||document.getElementById("lesson-modal-body");
+  if(title)title.textContent=l.icon+" "+l.title;
+  if(body)body.innerHTML=l.content;
   document.getElementById("lesson-overlay").classList.add("open");
 }
 async function markLessonDone(){
@@ -2979,7 +2982,7 @@ async function loadExtDB(){
       }
     });
     dbLoaded = true;
-    console.log(`DB étendue : +${added} actifs → total ${DB.length}`);
+  }catch(e){ /* silencieux si db.json pas encore uploadé */ }
   }catch(e){ console.warn("loadExtDB:", e); }
 }
 let priceCache = {};
