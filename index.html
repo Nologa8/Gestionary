@@ -2098,6 +2098,7 @@ async function initApp(){
   await takeDailySnapshot();
   await renderOverview();
   renderPatri();
+  renderProgression();
   checkQuests(); // vérifier les quêtes au démarrage
   updateClock();
   setInterval(updateClock,1000);
@@ -2198,7 +2199,7 @@ async function renderPage(id){
   else if(id==="autres"){renderAutres();}
   else if(id==="crypto")renderCrypto();
   else if(id==="autres")renderAutres();
-  else if(id==="progression")renderProgression();
+  else if(id==="progression"){loadPositions().then(()=>renderProgression());renderProgression();}
   else if(id==="education")renderEducation();
   else if(id==="settings")renderSettings();
 }
@@ -2609,6 +2610,7 @@ async function delCrypto(id){if(!confirm("Supprimer ?"))return;await dbDel("cryp
 // GAMIFICATION PAGES
 // ═══════════════════════════════════════════════════════
 function renderProgression(){
+  try{
   const rank=getRank(xp),next=getNextRank(xp);
   const pct=next?(xp-rank.xp)/(next.xp-rank.xp)*100:100;
   const rankIdx=RANKS.findIndex(r=>r.id===rank.id);
@@ -2676,6 +2678,7 @@ function renderProgression(){
 
   // Leçons
   renderEducation();
+  }catch(e){console.error("renderProgression:",e);}
 }
 function renderEducation(){
   document.getElementById("lessons-grid").innerHTML=LESSONS.map(l=>{
