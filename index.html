@@ -365,7 +365,8 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .chip{font-family:var(--M);font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--b);color:var(--t3);cursor:pointer;}
 .chip:hover{border-color:var(--pu);color:var(--pu2);}
 .chip.on{background:var(--pu3);border-color:rgba(124,58,237,0.35);color:var(--pu2);}
-.res-list{display:flex;flex-direction:column;gap:4px;max-height:520px;overflow-y:auto;padding-right:2px;}
+.tax-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:8px 10px;background:var(--s2);border-radius:6px;}.tax-row em{color:var(--t3);font-style:normal;font-family:var(--M);}.tax-row .tr{font-family:var(--M);color:var(--rd);font-weight:600;}.tax-total{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;padding:10px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);border-radius:6px;margin-top:4px;}
+
 .res{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;background:var(--s2);cursor:pointer;border:1px solid var(--b);transition:all 0.12s;}
 .res:hover{border-color:rgba(124,58,237,0.4);background:var(--s3);transform:translateX(2px);}
 .r-t{font-family:var(--M);font-size:11px;font-weight:700;color:var(--pu2);width:56px;flex-shrink:0;letter-spacing:0.5px;}
@@ -560,6 +561,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
     <div class="nav-tab adv" data-page="analyse" onclick="goPage('analyse',this)">Analyse</div>
     <div class="nav-tab adv" data-page="risque" onclick="goPage('risque',this)">Risque</div>
     <div class="nav-tab adv" data-page="historique" onclick="goPage('historique',this)">Historique</div>
+    <div class="nav-tab adv" data-page="impots" onclick="goPage('impots',this)">Impôts</div>
     <div class="nav-tab" data-page="progression" onclick="goPage('progression',this)">Progression</div>
     <div class="nav-tab" data-page="conseiller" onclick="goPage('conseiller',this)" style="color:var(--pu2)">✦ IA</div>
   </div>
@@ -786,7 +788,133 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
   </div>
 </div>
 
-<!-- PROGRESSION -->
+<!-- IMPÔTS -->
+<div class="page wrap" id="page-impots">
+  <div class="sh"><div><div class="sh-title">🇫🇷 Fiscalité</div><div class="sh-sub">Estimez vos impôts sur investissements</div></div></div>
+
+  <!-- Profil fiscal -->
+  <div class="g2 mb">
+    <div class="card">
+      <div class="ct">📋 Votre profil fiscal</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">TRANCHE MARGINALE D'IMPOSITION (TMI)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="tmi-btns">
+            <button class="chip" onclick="setTMI(0,this)">0%</button>
+            <button class="chip" onclick="setTMI(11,this)">11%</button>
+            <button class="chip on" onclick="setTMI(30,this)">30%</button>
+            <button class="chip" onclick="setTMI(41,this)">41%</button>
+            <button class="chip" onclick="setTMI(45,this)">45%</button>
+          </div>
+          <div style="font-size:9px;color:var(--t3);margin-top:4px">Votre tranche IR sur revenus ordinaires (salaire, etc.)</div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">TYPE DE COMPTE</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="compte-btns">
+            <button class="chip on" onclick="setCompte('cto',this)">CTO</button>
+            <button class="chip" onclick="setCompte('pea',this)">PEA</button>
+            <button class="chip" onclick="setCompte('pea_moins5',this)">PEA &lt;5 ans</button>
+            <button class="chip" onclick="setCompte('assurance_vie',this)">Assurance-vie</button>
+          </div>
+        </div>
+
+        <div id="pea-date-row" style="display:none">
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">DATE D'OUVERTURE DU PEA</div>
+          <input type="date" id="pea-date" class="inp" style="max-width:200px" oninput="calcImpots()">
+        </div>
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">REVENUS IMPOSABLES ANNUELS (foyer)</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="revenus-input" class="inp" placeholder="ex: 45000" style="max-width:180px" oninput="calcImpots()">
+            <span style="font-size:11px;color:var(--t3)">€/an</span>
+          </div>
+          <div style="font-size:9px;color:var(--t3);margin-top:4px">Utile pour comparer PFU vs barème progressif</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">💰 Simulation de cession</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">MONTANT DE CESSION (prix de vente)</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="cession-val" class="inp" placeholder="ex: 10000" style="max-width:180px" oninput="calcImpots()">
+            <span style="font-size:11px;color:var(--t3)">€</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">PRIX DE REVIENT (coût d'acquisition)</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="cession-prix" class="inp" placeholder="ex: 7000" style="max-width:180px" oninput="calcImpots()">
+            <span style="font-size:11px;color:var(--t3)">€</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">DIVIDENDES PERÇUS CETTE ANNÉE</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="div-annuel" class="inp" placeholder="ex: 500" style="max-width:180px" oninput="calcImpots()">
+            <span style="font-size:11px;color:var(--t3)">€</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-family:var(--D);font-weight:700">PLUS-VALUES CRYPTO CETTE ANNÉE</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="crypto-pv" class="inp" placeholder="ex: 1500" style="max-width:180px" oninput="calcImpots()">
+            <span style="font-size:11px;color:var(--t3)">€</span>
+          </div>
+          <div style="font-size:9px;color:var(--t3);margin-top:4px">Toujours taxées PFU 30% (pas de choix barème)</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:4px" onclick="prefillFromPortfolio()">🔄 Importer depuis mon portfolio</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Résultats -->
+  <div id="impots-result" style="display:none">
+
+    <!-- Verdict -->
+    <div class="card mb" id="impots-verdict"></div>
+
+    <!-- Détail PFU vs Barème -->
+    <div class="g2 mb">
+      <div class="card" id="pfu-card">
+        <div class="ct">⚡ Option PFU (Flat Tax 30%)</div>
+        <div id="pfu-detail"></div>
+      </div>
+      <div class="card" id="bareme-card">
+        <div class="ct">📊 Option Barème progressif IR</div>
+        <div id="bareme-detail"></div>
+      </div>
+    </div>
+
+    <!-- Décomposition complète -->
+    <div class="card mb">
+      <div class="ct">🔍 Décomposition complète</div>
+      <div id="impots-breakdown"></div>
+    </div>
+
+    <!-- Conseils -->
+    <div class="card">
+      <div class="ct">💡 Conseils personnalisés</div>
+      <div id="impots-conseils"></div>
+    </div>
+
+  </div>
+  <div id="impots-empty" style="text-align:center;padding:40px;color:var(--t3)">
+    <div style="font-size:32px;margin-bottom:10px">🧾</div>
+    <div style="font-size:13px">Remplis les champs ci-dessus pour voir ton estimation fiscale</div>
+  </div>
+</div>
 <div class="page wrap" id="page-progression">
   <div class="sh"><div class="sh-title">Progression</div></div>
 
@@ -2020,7 +2148,7 @@ function applyLevel(level){
   const lvlMap={novice:"lv-novice",intermediaire:"lv-intermediaire",expert:"lv-expert"};
   document.body.className=lvlMap[level]||"lv-intermediaire";
   // Show/hide advanced tabs
-  const advTabs=["rebalancing","whatif","risque","analyse","historique"];
+  const advTabs=["rebalancing","whatif","risque","analyse","historique","impots"];
   document.querySelectorAll(".nav-tab").forEach(btn=>{
     const page=btn.getAttribute("data-page")||"";
     if(advTabs.includes(page)){btn.style.display=level==="novice"?"none":"";}
@@ -2236,7 +2364,7 @@ function goPageMob(id,el){document.querySelectorAll(".mob-tab").forEach(b=>b.cla
 // ═══════════════════════════════════════════════════════
 // PAGE NAVIGATION
 // ═══════════════════════════════════════════════════════
-const PAGE_TITLES={overview:"Vue d'ensemble",positions:"Positions",rebalancing:"Rebalancing",whatif:"Simulateur What-if",patrimoine:"Patrimoine global",crypto:"Crypto-monnaies",autres:"Autres actifs",analyse:"Analyse géo & sectorielle",risque:"Risque",historique:"Historique",dividendes:"Dividendes",journal:"Journal",progression:"Rangs & Défis",education:"Éducation financière",conseiller:"Conseiller IA",settings:"Paramètres"};
+const PAGE_TITLES={overview:"Vue d'ensemble",positions:"Positions",rebalancing:"Rebalancing",whatif:"Simulateur What-if",patrimoine:"Patrimoine global",crypto:"Crypto-monnaies",autres:"Autres actifs",analyse:"Analyse géo & sectorielle",risque:"Risque",historique:"Historique",impots:"Fiscalité",dividendes:"Dividendes",journal:"Journal",progression:"Rangs & Défis",education:"Éducation financière",conseiller:"Conseiller IA",settings:"Paramètres"};
 let currentPage="overview";
 function goPage(id,el){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
@@ -3025,7 +3153,291 @@ function appendTyping(){
 function removeTyping(id){const el=document.getElementById(id);if(el)el.remove();}
 
 // ═══════════════════════════════════════════════════════
-// SETTINGS
+// FISCALITÉ FRANÇAISE
+// ═══════════════════════════════════════════════════════
+let fiscalTMI = 30;
+let fiscalCompte = 'cto';
+
+function setTMI(val, btn){
+  fiscalTMI = val;
+  document.querySelectorAll('#tmi-btns .chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  calcImpots();
+}
+
+function setCompte(val, btn){
+  fiscalCompte = val;
+  document.querySelectorAll('#compte-btns .chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const peaRow = document.getElementById('pea-date-row');
+  if(peaRow) peaRow.style.display = (val==='pea'||val==='pea_moins5') ? 'block' : 'none';
+  calcImpots();
+}
+
+function prefillFromPortfolio(){
+  // Remplir avec les données réelles du portfolio
+  const plusValue = Math.max(0, totV() - totI());
+  const investi = totI();
+  const cessionVal = document.getElementById('cession-val');
+  const cessionPrix = document.getElementById('cession-prix');
+  const divAnnuel = document.getElementById('div-annuel');
+
+  if(cessionVal) cessionVal.value = fmt(totV()).replace(/\s/g,'');
+  if(cessionPrix) cessionPrix.value = fmt(investi).replace(/\s/g,'');
+
+  // Dividendes depuis les enregistrements
+  dbAll("dividends").then(divs=>{
+    const myDivs = divs.filter(d=>String(d.portfolio_id)===String(currentPF));
+    const annee = new Date().getFullYear();
+    const divCetteAnnee = myDivs.filter(d=>d.date&&d.date.startsWith(annee)).reduce((s,d)=>s+d.amount,0);
+    if(divAnnuel && divCetteAnnee > 0) divAnnuel.value = divCetteAnnee.toFixed(2);
+    calcImpots();
+  });
+
+  // Crypto
+  const cryptoGain = cryptoPos.reduce((s,p)=>s+Math.max(0,p.current_value-(p.invested||0)),0);
+  const cryptoPv = document.getElementById('crypto-pv');
+  if(cryptoPv && cryptoGain > 0) cryptoPv.value = cryptoGain.toFixed(2);
+
+  showToast('Données importées depuis le portfolio ✓');
+  calcImpots();
+}
+
+function calcImpots(){
+  const cessionVal = parseFloat(document.getElementById('cession-val')?.value)||0;
+  const cessionPrix = parseFloat(document.getElementById('cession-prix')?.value)||0;
+  const divAnnuel = parseFloat(document.getElementById('div-annuel')?.value)||0;
+  const cryptoPv = parseFloat(document.getElementById('crypto-pv')?.value)||0;
+
+  const hasData = cessionVal>0 || divAnnuel>0 || cryptoPv>0;
+  document.getElementById('impots-result').style.display = hasData ? 'block' : 'none';
+  document.getElementById('impots-empty').style.display = hasData ? 'none' : 'block';
+  if(!hasData) return;
+
+  const pvBrute = Math.max(0, cessionVal - cessionPrix);
+  const tmi = fiscalTMI / 100;
+  const PS = 0.172; // prélèvements sociaux fixes
+  const IR_PFU = 0.128; // IR flat tax
+
+  // ── PFU ──────────────────────────────────────────────────────────────────
+  let pfuPV=0, pfuDiv=0, pfuCrypto=0;
+
+  if(fiscalCompte==='pea'){
+    // PEA >5 ans : 0% IR, 17.2% PS uniquement sur PV
+    pfuPV = pvBrute * PS;
+    pfuDiv = 0; // dividendes dans PEA = pas taxés tant que pas retrait
+  } else if(fiscalCompte==='pea_moins5'){
+    // PEA <5 ans : clôture = 22.5% + 17.2% = 39.7%... ou PFU si retrait partiel avt 5 ans
+    pfuPV = pvBrute * (0.225 + PS);
+    pfuDiv = 0;
+  } else if(fiscalCompte==='assurance_vie'){
+    // AV >8 ans : abattement 4600€/9200€ + 7.5% + 17.2%
+    const abatt = 4600;
+    const pvNet = Math.max(0, pvBrute - abatt);
+    pfuPV = pvNet * (0.075 + PS);
+    pfuDiv = divAnnuel * (0.075 + PS);
+  } else {
+    // CTO : PFU 30%
+    pfuPV = pvBrute * (IR_PFU + PS);
+    pfuDiv = divAnnuel * (IR_PFU + PS);
+  }
+  pfuCrypto = cryptoPv * 0.30; // toujours 30% flat
+  const totalPFU = pfuPV + pfuDiv + pfuCrypto;
+
+  // ── BARÈME ────────────────────────────────────────────────────────────────
+  // Barème : PV taxées à TMI + 17.2% PS, dividendes : abattement 40% puis TMI + PS
+  // Mais CSG déductible (6.8% de 17.2% = 6.8% déductibles)
+  let baremePV=0, baremeDiv=0, baremeCrypto=0;
+
+  if(fiscalCompte==='pea'||fiscalCompte==='pea_moins5'){
+    baremePV = pfuPV; // PEA, barème = même chose
+    baremeDiv = 0;
+  } else if(fiscalCompte==='assurance_vie'){
+    baremePV = pfuPV;
+    baremeDiv = pfuDiv;
+  } else {
+    // CTO barème
+    const csgDed = pvBrute * 0.068; // CSG déductible l'année suivante
+    baremePV = pvBrute * (tmi + PS) - csgDed * tmi; // approximation
+    // Dividendes : abattement 40% + CSG partiellement déductible
+    const divBase = divAnnuel * 0.60; // après abattement 40%
+    const csgDedDiv = divAnnuel * 0.068;
+    baremeDiv = divBase * (tmi + PS) - csgDedDiv * tmi;
+  }
+  baremeCrypto = cryptoPv * 0.30; // pas de choix pour la crypto
+  const totalBareme = Math.max(0, baremePV) + Math.max(0, baremeDiv) + baremeCrypto;
+
+  const meilleurOption = fiscalCompte==='pea'||fiscalCompte==='assurance_vie' ? 'pea' :
+    totalPFU <= totalBareme ? 'pfu' : 'bareme';
+  const economie = Math.abs(totalPFU - totalBareme);
+
+  // ── RENDU ─────────────────────────────────────────────────────────────────
+  const verdict = document.getElementById('impots-verdict');
+  if(verdict){
+    const isGood = meilleurOption !== 'bareme';
+    verdict.innerHTML=`
+      <div style="display:flex;align-items:center;gap:16px;padding:4px 0">
+        <div style="font-size:36px">${fiscalCompte==='pea'?"🏆":meilleurOption==='pfu'?"⚡":"📊"}</div>
+        <div>
+          <div style="font-family:var(--D);font-size:16px;font-weight:700;margin-bottom:4px">
+            ${fiscalCompte==='pea'
+              ? `PEA &gt;5 ans — Régime ultra-favorable 🎉`
+              : meilleurOption==='pfu'
+              ? `PFU (Flat Tax) est votre meilleure option`
+              : `Le Barème progressif IR vous avantage`}
+          </div>
+          <div style="font-size:11px;color:var(--t3)">
+            ${fiscalCompte==='pea'
+              ? `Seuls les prélèvements sociaux (17.2%) s'appliquent sur vos plus-values.`
+              : economie>5
+              ? `Vous économisez <strong style="color:var(--gn)">~${fmt(economie)} €</strong> par rapport à l'autre option.`
+              : `Les deux options sont quasi-équivalentes pour votre profil.`}
+          </div>
+        </div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:11px;color:var(--t3)">Impôts estimés</div>
+          <div style="font-family:var(--M);font-size:28px;font-weight:700;color:var(--rd)">${fmt(Math.min(totalPFU,totalBareme))} €</div>
+        </div>
+      </div>`;
+  }
+
+  // Cartes PFU vs Barème
+  const renderCard = (id, label, pvTax, divTax, cryptoTax, total, isWinner) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const taux = cessionVal>0 ? (total/cessionVal*100).toFixed(1) : '—';
+    el.style.border = isWinner ? '1px solid rgba(245,158,11,0.4)' : '1px solid var(--b2)';
+    el.querySelector('#'+id.replace('-card','-detail'))?.remove?.();
+    const d = document.createElement('div');
+    d.id = id.replace('-card','') + '-detail';
+    d.innerHTML=`
+      <div style="margin-top:12px">
+        ${isWinner?`<div class="badge b-amber" style="margin-bottom:10px">✓ Recommandé pour vous</div>`:''}
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${pvBrute>0?`<div style="display:flex;justify-content:space-between;font-size:11px;padding:8px;background:var(--s2);border-radius:6px">
+            <span>Plus-value <span style="color:var(--t3)">${fmt(pvBrute)} €</span></span>
+            <span style="font-family:var(--M);color:var(--rd)">−${fmt(pvTax)} €</span>
+          </div>`:''}
+          ${divAnnuel>0?`<div style="display:flex;justify-content:space-between;font-size:11px;padding:8px;background:var(--s2);border-radius:6px">
+            <span>Dividendes <span style="color:var(--t3)">${fmt(divAnnuel)} €</span></span>
+            <span style="font-family:var(--M);color:var(--rd)">−${fmt(divTax)} €</span>
+          </div>`:''}
+          ${cryptoPv>0?`<div style="display:flex;justify-content:space-between;font-size:11px;padding:8px;background:var(--s2);border-radius:6px">
+            <span>Crypto PV <span style="color:var(--t3)">${fmt(cryptoPv)} €</span></span>
+            <span style="font-family:var(--M);color:var(--rd)">−${fmt(cryptoTax)} €</span>
+          </div>`:''}
+          <div style="display:flex;justify-content:space-between;font-size:13px;padding:10px;background:rgba(248,113,113,0.06);border-radius:6px;border:1px solid rgba(248,113,113,0.15);margin-top:4px">
+            <span style="font-weight:700">Total à payer</span>
+            <span style="font-family:var(--M);font-weight:700;color:var(--rd)">−${fmt(total)} €</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--t3);margin-top:4px">
+            <span>Taux effectif global</span>
+            <span style="font-family:var(--M)">${taux}%</span>
+          </div>
+        </div>
+      </div>`;
+    el.appendChild(d);
+  };
+
+  // Re-créer le contenu des cartes
+  const pfuCard = document.getElementById('pfu-card');
+  const barCard = document.getElementById('bareme-card');
+  if(pfuCard){
+    pfuCard.querySelector('[id$="-detail"]')?.remove();
+    pfuCard.style.border = meilleurOption==='pfu' ? '1px solid rgba(245,158,11,0.4)':'1px solid var(--b2)';
+    const d=document.createElement('div');
+    d.innerHTML=`<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+      ${meilleurOption==='pfu'?`<div class="badge b-amber" style="margin-bottom:2px">✓ Recommandé</div>`:''}
+      ${pvBrute>0?`<div class="tax-row"><span>Plus-value <em>${fmt(pvBrute)} €</em></span><span class="tr">−${fmt(pfuPV)} €</span></div>`:''}
+      ${divAnnuel>0?`<div class="tax-row"><span>Dividendes bruts <em>${fmt(divAnnuel)} €</em></span><span class="tr">−${fmt(pfuDiv)} €</span></div>`:''}
+      ${cryptoPv>0?`<div class="tax-row"><span>Crypto PV <em>${fmt(cryptoPv)} €</em></span><span class="tr">−${fmt(pfuCrypto)} €</span></div>`:''}
+      <div class="tax-total"><span>Total impôts</span><span style="color:var(--rd);font-family:var(--M);font-weight:700">−${fmt(totalPFU)} €</span></div>
+      <div style="font-size:9px;color:var(--t3)">${fiscalCompte==='cto'?`12.8% IR flat + 17.2% prélèvements sociaux`:fiscalCompte==='pea'?`0% IR + 17.2% PS (PEA >5 ans)`:fiscalCompte==='pea_moins5'?`22.5% IR + 17.2% PS (PEA <5 ans = clôture)`:fiscalCompte==='assurance_vie'?`7.5% IR + 17.2% PS (AV >8 ans, après abatt. 4600€)`:''}</div>
+    </div>`;
+    pfuCard.appendChild(d);
+  }
+  if(barCard){
+    barCard.querySelector('[id$="-detail"]')?.remove();
+    barCard.style.border = meilleurOption==='bareme' ? '1px solid rgba(245,158,11,0.4)':'1px solid var(--b2)';
+    const d=document.createElement('div');
+    d.innerHTML=`<div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+      ${meilleurOption==='bareme'?`<div class="badge b-amber" style="margin-bottom:2px">✓ Recommandé</div>`:''}
+      ${pvBrute>0?`<div class="tax-row"><span>Plus-value <em>${fmt(pvBrute)} €</em></span><span class="tr">−${fmt(Math.max(0,baremePV))} €</span></div>`:''}
+      ${divAnnuel>0?`<div class="tax-row"><span>Dividendes (−40% abatt.) <em>${fmt(divAnnuel*0.6)} €</em></span><span class="tr">−${fmt(Math.max(0,baremeDiv))} €</span></div>`:''}
+      ${cryptoPv>0?`<div class="tax-row"><span>Crypto PV <em>${fmt(cryptoPv)} €</em></span><span class="tr">−${fmt(baremeCrypto)} €</span></div>`:''}
+      <div class="tax-total"><span>Total impôts</span><span style="color:var(--rd);font-family:var(--M);font-weight:700">−${fmt(totalBareme)} €</span></div>
+      <div style="font-size:9px;color:var(--t3)">TMI ${fiscalTMI}% + 17.2% PS − CSG déductible (6.8%) · Dividendes : abattement 40%</div>
+    </div>`;
+    barCard.appendChild(d);
+  }
+
+  // Décomposition
+  const bd = document.getElementById('impots-breakdown');
+  if(bd) bd.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+      ${pvBrute>0?`
+      <div style="padding:12px;background:var(--s2);border-radius:8px">
+        <div style="font-size:10px;color:var(--t3);font-family:var(--D);font-weight:700;margin-bottom:8px">PLUS-VALUE</div>
+        <div style="font-size:11px;margin-bottom:4px">Prix de vente : <strong>${fmt(cessionVal)} €</strong></div>
+        <div style="font-size:11px;margin-bottom:4px">Prix de revient : <strong>${fmt(cessionPrix)} €</strong></div>
+        <div style="font-size:11px;color:var(--gn)">PV brute : <strong>+${fmt(pvBrute)} €</strong></div>
+        ${fiscalCompte==='cto'?`<div style="font-size:9px;color:var(--t3);margin-top:6px">PFU : ${fmt(pvBrute*IR_PFU)} € IR + ${fmt(pvBrute*PS)} € PS</div>`:''}
+      </div>`:''}
+      ${divAnnuel>0?`
+      <div style="padding:12px;background:var(--s2);border-radius:8px">
+        <div style="font-size:10px;color:var(--t3);font-family:var(--D);font-weight:700;margin-bottom:8px">DIVIDENDES</div>
+        <div style="font-size:11px;margin-bottom:4px">Dividendes bruts : <strong>${fmt(divAnnuel)} €</strong></div>
+        <div style="font-size:11px;margin-bottom:4px">Base PFU : <strong>${fmt(divAnnuel)} €</strong></div>
+        <div style="font-size:11px">Base barème : <strong>${fmt(divAnnuel*0.6)} €</strong> (−40%)</div>
+        <div style="font-size:9px;color:var(--t3);margin-top:6px">PFU : ${fmt(divAnnuel*0.30)} €  /  Barème : ${fmt(Math.max(0,baremeDiv))} €</div>
+      </div>`:''}
+      ${cryptoPv>0?`
+      <div style="padding:12px;background:var(--s2);border-radius:8px">
+        <div style="font-size:10px;color:var(--t3);font-family:var(--D);font-weight:700;margin-bottom:8px">CRYPTO</div>
+        <div style="font-size:11px;margin-bottom:4px">Plus-value : <strong>${fmt(cryptoPv)} €</strong></div>
+        <div style="font-size:11px;color:var(--rd)">Impôt (30% flat) : <strong>−${fmt(cryptoPv*0.30)} €</strong></div>
+        <div style="font-size:9px;color:var(--t3);margin-top:6px">Pas de choix barème pour la crypto</div>
+      </div>`:''}
+      <div style="padding:12px;background:var(--s2);border-radius:8px">
+        <div style="font-size:10px;color:var(--t3);font-family:var(--D);font-weight:700;margin-bottom:8px">NET APRÈS IMPÔTS</div>
+        <div style="font-size:11px;margin-bottom:4px">Gain brut : <strong style="color:var(--gn)">+${fmt(pvBrute+divAnnuel+cryptoPv)} €</strong></div>
+        <div style="font-size:11px;margin-bottom:4px">Impôts (PFU) : <strong style="color:var(--rd)">−${fmt(totalPFU)} €</strong></div>
+        <div style="font-size:13px;font-weight:700;color:var(--am);margin-top:6px">Net : ${fmt(pvBrute+divAnnuel+cryptoPv-Math.min(totalPFU,totalBareme))} €</div>
+      </div>
+    </div>`;
+
+  // Conseils
+  const cons = document.getElementById('impots-conseils');
+  if(cons){
+    const tips=[];
+    if(fiscalCompte==='cto' && pvBrute>0 && fiscalTMI<=11){
+      tips.push({i:"💡",t:"Votre TMI est faible — le barème progressif est probablement meilleur que le PFU. Cochez l'option barème dans votre déclaration (case 2OP)."});
+    }
+    if(fiscalCompte==='cto'){
+      tips.push({i:"🏦",t:"Pensez au PEA : après 5 ans, seuls les prélèvements sociaux (17.2%) s'appliquent sur vos retraits. Économie potentielle = " + fmt(pvBrute*0.128) + " € sur votre PV actuelle."});
+    }
+    if(pvBrute>0 && cessionPrix>cessionVal){
+      tips.push({i:"✂️",t:"Compensation moins-values : si vous avez des moins-values sur d'autres titres cette année, vous pouvez les imputer sur cette plus-value pour réduire l'imposition."});
+    }
+    if(divAnnuel>2000){
+      tips.push({i:"📅",t:"Abattement de 40% sur dividendes sous barème : si votre TMI est ≤30%, le barème peut avantager les dividendes. Simulez les deux options avant de déclarer."});
+    }
+    if(cryptoPv>0){
+      tips.push({i:"₿",t:`Crypto : aucun impôt si total des cessions crypto < 305 € sur l'année (exonération automatique). Vos ${fmt(cryptoPv)} € de PV sont imposables.`});
+    }
+    tips.push({i:"🗓️",t:"Déclaration : les plus-values et dividendes sont déclarés l'année suivante (revenus 2024 → déclaration printemps 2025). Conservez tous vos relevés Cerfa 2561."});
+    if(fiscalCompte==='assurance_vie'){
+      tips.push({i:"🎁",t:"Assurance-vie >8 ans : abattement annuel de 4 600 € (célibataire) ou 9 200 € (couple) sur les gains. Planifiez vos retraits pour ne pas dépasser ce seuil."});
+    }
+    cons.innerHTML=tips.map(t=>`
+      <div style="display:flex;gap:12px;padding:10px;border-radius:8px;background:var(--s2);margin-bottom:8px">
+        <span style="font-size:16px;flex-shrink:0">${t.i}</span>
+        <span style="font-size:11px;color:var(--t2);line-height:1.6">${t.t}</span>
+      </div>`).join('');
+  }
+}
+
+
 // ═══════════════════════════════════════════════════════
 async function renderSettings(){
   document.getElementById("s-pos").textContent=positions.length;
