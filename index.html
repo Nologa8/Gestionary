@@ -365,7 +365,18 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .chip{font-family:var(--M);font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--b);color:var(--t3);cursor:pointer;}
 .chip:hover{border-color:var(--pu);color:var(--pu2);}
 .chip.on{background:var(--pu3);border-color:rgba(124,58,237,0.35);color:var(--pu2);}
-.broker-btn{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:10px 6px;cursor:pointer;color:var(--tx);transition:all 0.15s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}.broker-btn:hover{border-color:var(--pu2);background:rgba(124,58,237,0.08);}.broker-btn.active{border-color:var(--pu2);background:rgba(124,58,237,0.12);}
+.mode-switcher{display:flex;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:3px;gap:2px;margin-left:8px;flex-shrink:0;}
+.mode-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:16px;border:none;cursor:pointer;font-size:10px;font-weight:700;font-family:var(--D);color:var(--t3);background:transparent;transition:all 0.2s;}
+.mode-btn.active{background:var(--s1);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+#mode-immo.active{background:linear-gradient(135deg,#ea580c,#f97316);color:#fff;}
+/* Thème Immobilier */
+body.immo-mode{--am:#f97316;--pu2:#ea580c;--bl:#fb923c;}
+body.immo-mode .nav-logo{background:linear-gradient(135deg,#ea580c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.immo-mode .btn-primary{background:linear-gradient(135deg,#ea580c,#f97316);}
+body.immo-mode .nav-tab.active{color:#f97316;border-bottom-color:#f97316;}
+body.immo-mode .xp-fill{background:linear-gradient(90deg,#ea580c,#f97316);}
+body.immo-mode #sh-val{color:#f97316;}
+border:1px solid var(--b2);border-radius:8px;padding:10px 6px;cursor:pointer;color:var(--tx);transition:all 0.15s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}.broker-btn:hover{border-color:var(--pu2);background:rgba(124,58,237,0.08);}.broker-btn.active{border-color:var(--pu2);background:rgba(124,58,237,0.12);}
 .tax-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:8px 10px;background:var(--s2);border-radius:6px;}.tax-row em{color:var(--t3);font-style:normal;font-family:var(--M);}.tax-row .tr{font-family:var(--M);color:var(--rd);font-weight:600;}.tax-total{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;padding:10px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);border-radius:6px;margin-top:4px;}
 
 .res{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;background:var(--s2);cursor:pointer;border:1px solid var(--b);transition:all 0.12s;}
@@ -565,6 +576,16 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
     <div class="nav-tab adv" data-page="impots" onclick="goPage('impots',this)">Impôts</div>
     <div class="nav-tab" data-page="progression" onclick="goPage('progression',this)">Progression</div>
     <div class="nav-tab" data-page="conseiller" onclick="goPage('conseiller',this)" style="color:var(--pu2)">✦ IA</div>
+
+    <!-- Switcher Bourse / Immobilier -->
+    <div class="mode-switcher" id="mode-switcher">
+      <button class="mode-btn active" id="mode-bourse" onclick="setMode('bourse')" title="Portefeuille Bourse">
+        <span>📈</span><span>Bourse</span>
+      </button>
+      <button class="mode-btn" id="mode-immo" onclick="setMode('immo')" title="Immobilier">
+        <span>🏠</span><span>Immo</span>
+      </button>
+    </div>
   </div>
   <div class="nav-right">
     <div class="nav-xp" onclick="goPage('progression',null)" title="Progression XP">
@@ -1078,7 +1099,151 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 
 </div><!-- /app -->
 
-<!-- MOBILE NAV -->
+<!-- ════════════════════════════════════════════════════
+     IMMOBILIER
+═════════════════════════════════════════════════════ -->
+<div id="immo-app" style="display:none;flex:1;overflow-y:auto">
+
+  <!-- Nav immobilier -->
+  <div class="nav" style="border-bottom-color:rgba(249,115,22,0.2)">
+    <div class="nav-tabs" id="immo-nav-tabs">
+      <div class="nav-tab active" data-immo="dashboard" onclick="goImmo('dashboard',this)">Dashboard</div>
+      <div class="nav-tab" data-immo="biens" onclick="goImmo('biens',this)">🏠 Mes biens</div>
+      <div class="nav-tab" data-immo="rendement" onclick="goImmo('rendement',this)">📊 Rendements</div>
+      <div class="nav-tab" data-immo="credits" onclick="goImmo('credits',this)">🏦 Crédits</div>
+      <div class="nav-tab" data-immo="fiscalite" onclick="goImmo('fiscalite',this)">🧾 Fiscalité</div>
+      <div class="nav-tab" data-immo="simulateur" onclick="goImmo('simulateur',this)">🔮 Simulateur</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn btn-primary btn-sm" onclick="openAddBien()" style="background:linear-gradient(135deg,#ea580c,#f97316)">+ Ajouter un bien</button>
+      <div class="mode-switcher">
+        <button class="mode-btn" onclick="setMode('bourse')">📈 Bourse</button>
+        <button class="mode-btn active" style="background:linear-gradient(135deg,#ea580c,#f97316);color:#fff">🏠 Immo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages immo -->
+  <div id="immo-page-dashboard" class="immo-page active wrap">
+    <div class="sh"><div><div class="sh-title" style="color:#f97316">🏠 Patrimoine Immobilier</div><div class="sh-sub">Vue d'ensemble de vos biens</div></div></div>
+    <div class="g4 mb" id="immo-kpis"></div>
+    <div class="g2 mb">
+      <div class="card">
+        <div class="ct">Répartition du patrimoine immo</div>
+        <div class="bars" id="immo-repartition"></div>
+      </div>
+      <div class="card">
+        <div class="ct">Rendement brut vs net</div>
+        <div id="immo-rendement-mini" style="padding:8px 0"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">🏠 Mes biens <button class="btn btn-outline btn-sm" style="float:right" onclick="openAddBien()">+ Ajouter</button></div>
+      <div class="scroll"><table class="tbl"><thead><tr><th>Bien</th><th>Type</th><th>Valeur</th><th>Crédit restant</th><th>Net</th><th>Loyer/mois</th><th>Rdt brut</th><th>Rdt net</th><th></th></tr></thead><tbody id="immo-biens-table"></tbody></table></div>
+    </div>
+  </div>
+
+  <div id="immo-page-biens" class="immo-page wrap" style="display:none">
+    <div class="sh"><div><div class="sh-title">🏠 Mes biens</div></div></div>
+    <div id="immo-biens-grid" class="g2"></div>
+  </div>
+
+  <div id="immo-page-rendement" class="immo-page wrap" style="display:none">
+    <div class="sh"><div><div class="sh-title">📊 Analyse des rendements</div></div></div>
+    <div class="g4 mb" id="immo-rdt-kpis"></div>
+    <div class="card mb"><div class="ct">Rendement par bien</div><div class="bars" id="immo-rdt-bars"></div></div>
+    <div class="card"><div class="ct">Cashflow mensuel net</div><div id="immo-cashflow-detail"></div></div>
+  </div>
+
+  <div id="immo-page-credits" class="immo-page wrap" style="display:none">
+    <div class="sh"><div><div class="sh-title">🏦 Mes crédits</div></div></div>
+    <div class="g4 mb" id="immo-credits-kpis"></div>
+    <div class="card"><div class="ct">Détail des prêts</div><div class="scroll"><table class="tbl"><thead><tr><th>Bien</th><th>Capital restant</th><th>Mensualité</th><th>Taux</th><th>Fin</th><th>Durée restante</th></tr></thead><tbody id="immo-credits-table"></tbody></table></div></div>
+  </div>
+
+  <div id="immo-page-fiscalite" class="immo-page wrap" style="display:none">
+    <div class="sh"><div><div class="sh-title">🧾 Fiscalité immobilière</div></div></div>
+    <div class="g2 mb">
+      <div class="card">
+        <div class="ct">Régime fiscal actuel</div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap" id="regime-btns">
+          <button class="chip on" onclick="setRegime('micro',this)">Micro-foncier</button>
+          <button class="chip" onclick="setRegime('reel',this)">Réel</button>
+          <button class="chip" onclick="setRegime('lmnp',this)">LMNP</button>
+          <button class="chip" onclick="setRegime('lmp',this)">LMP</button>
+          <button class="chip" onclick="setRegime('sci',this)">SCI IS</button>
+        </div>
+        <div id="regime-desc" style="margin-top:12px;font-size:10px;color:var(--t3);line-height:1.7"></div>
+      </div>
+      <div class="card" id="immo-fisc-result"><div class="ct">Estimation fiscale</div><div id="immo-fisc-detail" style="margin-top:8px"></div></div>
+    </div>
+  </div>
+
+  <div id="immo-page-simulateur" class="immo-page wrap" style="display:none">
+    <div class="sh"><div><div class="sh-title">🔮 Simulateur d'investissement</div></div></div>
+    <div class="g2 mb">
+      <div class="card">
+        <div class="ct">⚙️ Paramètres</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">PRIX D'ACHAT (€)</div><input type="number" id="sim-prix" class="inp" placeholder="200000" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">APPORT (€)</div><input type="number" id="sim-apport" class="inp" placeholder="40000" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">LOYER MENSUEL (€)</div><input type="number" id="sim-loyer" class="inp" placeholder="800" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">TAUX CRÉDIT (%)</div><input type="number" id="sim-taux" class="inp" placeholder="3.5" step="0.1" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">DURÉE (années)</div><input type="number" id="sim-duree" class="inp" placeholder="20" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">CHARGES MENSUELLES (€)</div><input type="number" id="sim-charges" class="inp" placeholder="150" oninput="calcSimuImmo()"></div>
+          <div><div style="font-size:9px;color:var(--t3);margin-bottom:4px;font-family:var(--D);font-weight:700">TAXE FONCIÈRE (€/an)</div><input type="number" id="sim-tf" class="inp" placeholder="1200" oninput="calcSimuImmo()"></div>
+        </div>
+      </div>
+      <div class="card" id="sim-result">
+        <div class="ct">📊 Résultats</div>
+        <div id="sim-output" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL AJOUT BIEN -->
+<div class="overlay" id="add-bien-overlay">
+  <div class="modal" style="max-width:520px">
+    <div class="mhead"><h3>🏠 Ajouter un bien</h3><button class="mx" onclick="closeAddBien()">✕</button></div>
+    <div class="mbody">
+      <div class="fg" style="grid-template-columns:1fr 1fr">
+        <div><label>Nom du bien</label><input type="text" id="bien-nom" class="inp" placeholder="Ex: Appart Lyon 2"></div>
+        <div><label>Type</label>
+          <select id="bien-type" class="inp">
+            <option value="appartement">🏢 Appartement</option>
+            <option value="maison">🏡 Maison</option>
+            <option value="studio">🛏 Studio</option>
+            <option value="immeuble">🏗 Immeuble</option>
+            <option value="commerce">🏪 Commerce</option>
+            <option value="garage">🚗 Garage/Box</option>
+            <option value="scpi">📜 SCPI</option>
+            <option value="residence_principale">🏠 Résidence principale</option>
+          </select>
+        </div>
+        <div><label>Ville</label><input type="text" id="bien-ville" class="inp" placeholder="Lyon"></div>
+        <div><label>Surface (m²)</label><input type="number" id="bien-surface" class="inp" placeholder="45"></div>
+        <div><label>Valeur actuelle (€)</label><input type="number" id="bien-valeur" class="inp" placeholder="200000"></div>
+        <div><label>Prix d'achat (€)</label><input type="number" id="bien-achat" class="inp" placeholder="180000"></div>
+        <div><label>Loyer mensuel HC (€)</label><input type="number" id="bien-loyer" class="inp" placeholder="800"></div>
+        <div><label>Charges mensuelles (€)</label><input type="number" id="bien-charges" class="inp" placeholder="150"></div>
+        <div><label>Capital crédit restant (€)</label><input type="number" id="bien-credit" class="inp" placeholder="120000"></div>
+        <div><label>Mensualité crédit (€)</label><input type="number" id="bien-mensualite" class="inp" placeholder="650"></div>
+        <div><label>Taux crédit (%)</label><input type="number" id="bien-taux" class="inp" placeholder="2.5" step="0.1"></div>
+        <div><label>Fin de crédit</label><input type="date" id="bien-fin-credit" class="inp"></div>
+        <div><label>Taxe foncière (€/an)</label><input type="number" id="bien-tf" class="inp" placeholder="1200"></div>
+        <div><label>Date d'achat</label><input type="date" id="bien-date" class="inp"></div>
+      </div>
+      <div class="fa" style="margin-top:16px">
+        <button class="btn btn-outline" onclick="closeAddBien()">Annuler</button>
+        <button class="btn btn-primary" style="background:linear-gradient(135deg,#ea580c,#f97316)" onclick="confirmAddBien()">✓ Ajouter le bien</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════ -->
 <div class="mob-nav">
   <div class="mob-nav-inner">
     <div class="mob-tab active" onclick="goPageMob('overview',this)"><div class="mob-tab-ic">◉</div><div class="mob-tab-lb">Home</div></div>
@@ -3915,7 +4080,315 @@ function calcImpots(){
 
 // ═══════════════════════════════════════════════════════
 // ═══════════════════════════════════════════════════════
-// IMPORT CSV
+// MODE BOURSE / IMMOBILIER
+// ═══════════════════════════════════════════════════════
+let currentMode = 'bourse';
+let currentImmoPage = 'dashboard';
+let immoRegime = 'micro';
+
+function setMode(mode){
+  currentMode = mode;
+  const app = document.getElementById('app');
+  const immoApp = document.getElementById('immo-app');
+  const switcher = document.getElementById('mode-switcher');
+  document.getElementById('mode-bourse').classList.toggle('active', mode==='bourse');
+  document.getElementById('mode-immo').classList.toggle('active', mode==='immo');
+  if(mode==='immo'){
+    if(app) app.style.display='none';
+    if(immoApp) immoApp.style.display='flex';
+    immoApp.style.flexDirection='column';
+    document.body.classList.add('immo-mode');
+    renderImmoDashboard();
+  } else {
+    if(app) app.style.display='';
+    if(immoApp) immoApp.style.display='none';
+    document.body.classList.remove('immo-mode');
+  }
+}
+
+function goImmo(page, btn){
+  currentImmoPage = page;
+  document.querySelectorAll('#immo-nav-tabs .nav-tab').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('.immo-page').forEach(p=>p.style.display='none');
+  const el=document.getElementById('immo-page-'+page);
+  if(el) el.style.display='block';
+  if(page==='dashboard') renderImmoDashboard();
+  else if(page==='rendement') renderImmoRendement();
+  else if(page==='credits') renderImmoCredits();
+  else if(page==='fiscalite') renderImmoFiscalite();
+  else if(page==='biens') renderImmoBiens();
+}
+
+// ── FIRESTORE BIENS ───────────────────────────────────────────────────────────
+let biens = [];
+async function loadBiens(){
+  const all = await dbAll('biens');
+  biens = all.filter(b=>String(b.portfolio_id)===String(currentPF));
+}
+
+function openAddBien(){ document.getElementById('add-bien-overlay').classList.add('open'); }
+function closeAddBien(){ document.getElementById('add-bien-overlay').classList.remove('open'); }
+
+async function confirmAddBien(){
+  const bien = {
+    portfolio_id: String(currentPF),
+    nom: document.getElementById('bien-nom').value||'Bien sans nom',
+    type: document.getElementById('bien-type').value,
+    ville: document.getElementById('bien-ville').value||'',
+    surface: parseFloat(document.getElementById('bien-surface').value)||0,
+    valeur: parseFloat(document.getElementById('bien-valeur').value)||0,
+    prix_achat: parseFloat(document.getElementById('bien-achat').value)||0,
+    loyer: parseFloat(document.getElementById('bien-loyer').value)||0,
+    charges: parseFloat(document.getElementById('bien-charges').value)||0,
+    credit_restant: parseFloat(document.getElementById('bien-credit').value)||0,
+    mensualite: parseFloat(document.getElementById('bien-mensualite').value)||0,
+    taux: parseFloat(document.getElementById('bien-taux').value)||0,
+    fin_credit: document.getElementById('bien-fin-credit').value||'',
+    taxe_fonciere: parseFloat(document.getElementById('bien-tf').value)||0,
+    date_achat: document.getElementById('bien-date').value||'',
+  };
+  await dbPut('biens', bien);
+  await loadBiens();
+  closeAddBien();
+  renderImmoDashboard();
+  addXP(50, 'Bien immobilier ajouté 🏠');
+  showToast('✓ Bien ajouté : '+bien.nom);
+}
+
+async function deleteBien(id){
+  if(!confirm('Supprimer ce bien ?')) return;
+  await dbDel('biens', id);
+  await loadBiens();
+  renderImmoDashboard();
+  showToast('Bien supprimé');
+}
+
+// ── CALCULS ────────────────────────────────────────────────────────────────────
+function rdtBrut(b){ return b.valeur>0 ? (b.loyer*12)/b.valeur*100 : 0; }
+function rdtNet(b){
+  const loyers = b.loyer*12;
+  const charges = b.charges*12 + (b.taxe_fonciere||0);
+  const net = loyers - charges;
+  return b.valeur>0 ? net/b.valeur*100 : 0;
+}
+function cashflowNet(b){ return b.loyer - b.mensualite - b.charges - (b.taxe_fonciere||0)/12; }
+
+// ── RENDER DASHBOARD ──────────────────────────────────────────────────────────
+async function renderImmoDashboard(){
+  await loadBiens();
+  const totalValeur = biens.reduce((s,b)=>s+b.valeur,0);
+  const totalCredit = biens.reduce((s,b)=>s+b.credit_restant,0);
+  const totalNet = totalValeur - totalCredit;
+  const totalLoyer = biens.reduce((s,b)=>s+b.loyer,0);
+  const totalCashflow = biens.reduce((s,b)=>s+cashflowNet(b),0);
+  const avgRdt = biens.length>0 ? biens.reduce((s,b)=>s+rdtBrut(b),0)/biens.length : 0;
+
+  const kpis = document.getElementById('immo-kpis');
+  if(kpis) kpis.innerHTML=`
+    <div class="kpi" style="background:rgba(249,115,22,0.08);border:1px solid rgba(249,115,22,0.2)">
+      <div class="kpi-lbl">Patrimoine brut</div>
+      <div class="kpi-val" style="color:#f97316">${fmt(totalValeur)} €</div>
+      <div class="kpi-sub">${biens.length} bien(s)</div>
+    </div>
+    <div class="kpi" style="background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.15)">
+      <div class="kpi-lbl">Patrimoine net</div>
+      <div class="kpi-val" style="color:#fb923c">${fmt(totalNet)} €</div>
+      <div class="kpi-sub">Crédit restant : −${fmt(totalCredit)} €</div>
+    </div>
+    <div class="kpi kpi-${totalCashflow>=0?"gn":"rd"}">
+      <div class="kpi-lbl">Cashflow net/mois</div>
+      <div class="kpi-val ${totalCashflow>=0?"gn":"rd"}">${totalCashflow>=0?"+":""}${fmt(totalCashflow)} €</div>
+      <div class="kpi-sub">Loyers bruts : +${fmt(totalLoyer)} €/mois</div>
+    </div>
+    <div class="kpi kpi-am">
+      <div class="kpi-lbl">Rdt brut moyen</div>
+      <div class="kpi-val am">${avgRdt.toFixed(2)}%</div>
+      <div class="kpi-sub">Rdt net moy. : ${biens.length>0?(biens.reduce((s,b)=>s+rdtNet(b),0)/biens.length).toFixed(2):0}%</div>
+    </div>`;
+
+  // Table biens
+  const tbody = document.getElementById('immo-biens-table');
+  if(tbody){
+    if(!biens.length){
+      tbody.innerHTML=`<tr><td colspan="9" class="no-data">Aucun bien — cliquez "+ Ajouter un bien"</td></tr>`;
+    } else {
+      const types={appartement:"🏢",maison:"🏡",studio:"🛏",immeuble:"🏗",commerce:"🏪",garage:"🚗",scpi:"📜",residence_principale:"🏠"};
+      tbody.innerHTML=biens.map(b=>{
+        const net=b.valeur-b.credit_restant;
+        const rb=rdtBrut(b), rn=rdtNet(b), cf=cashflowNet(b);
+        return `<tr>
+          <td><div style="font-weight:600">${types[b.type]||'🏠'} ${b.nom}</div><div style="font-size:9px;color:var(--t3)">${b.ville||'—'}${b.surface?' · '+b.surface+'m²':''}</div></td>
+          <td><span class="badge b-neu" style="font-size:9px">${b.type}</span></td>
+          <td style="font-family:var(--M);color:#f97316">${fmt(b.valeur)} €</td>
+          <td style="font-family:var(--M);color:var(--rd)">${b.credit_restant>0?'−'+fmt(b.credit_restant)+' €':'—'}</td>
+          <td style="font-family:var(--M);font-weight:700;color:${net>=0?"var(--gn)":"var(--rd)"}">${fmt(net)} €</td>
+          <td style="font-family:var(--M)">${b.loyer>0?'+'+fmt(b.loyer)+' €':'—'}</td>
+          <td><span class="badge ${rb>=5?"b-pos":rb>=3?"b-neu":"b-neg"}">${rb.toFixed(2)}%</span></td>
+          <td><span class="badge ${rn>=3?"b-pos":rn>=1?"b-neu":"b-neg"}">${rn.toFixed(2)}%</span></td>
+          <td><button class="btn btn-outline btn-sm" style="color:var(--rd);border-color:rgba(248,113,113,0.3)" onclick="deleteBien('${b.id}')">✕</button></td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Mini répartition
+  const rp = document.getElementById('immo-repartition');
+  if(rp && biens.length>0){
+    const data = biens.map(b=>({n:b.nom,p:totalValeur>0?b.valeur/totalValeur*100:0}));
+    renderBars('immo-repartition', data, 100);
+  } else if(rp) rp.innerHTML=`<div class="no-data">Aucun bien</div>`;
+}
+
+function renderImmoBiens(){
+  const types={appartement:"🏢",maison:"🏡",studio:"🛏",immeuble:"🏗",commerce:"🏪",garage:"🚗",scpi:"📜",residence_principale:"🏠"};
+  const grid=document.getElementById('immo-biens-grid');
+  if(!grid) return;
+  if(!biens.length){grid.innerHTML=`<div class="no-data" style="grid-column:span 2;text-align:center;padding:40px">Aucun bien — cliquez "+ Ajouter un bien"</div>`;return;}
+  grid.innerHTML=biens.map(b=>`
+    <div class="card" style="border-top:3px solid #f97316">
+      <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
+        <div>
+          <div style="font-size:18px;margin-bottom:4px">${types[b.type]||'🏠'}</div>
+          <div style="font-weight:700;font-size:14px">${b.nom}</div>
+          <div style="font-size:10px;color:var(--t3)">${b.ville||''}${b.surface?' · '+b.surface+' m²':''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--M);font-size:18px;font-weight:700;color:#f97316">${fmt(b.valeur)} €</div>
+          <div style="font-size:9px;color:var(--t3)">Valeur actuelle</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:10px">
+        <div style="padding:6px;background:var(--s2);border-radius:6px"><div style="color:var(--t3)">Loyer/mois</div><div style="font-family:var(--M);font-weight:700;color:var(--gn)">${b.loyer>0?'+'+fmt(b.loyer)+' €':'—'}</div></div>
+        <div style="padding:6px;background:var(--s2);border-radius:6px"><div style="color:var(--t3)">Cashflow net</div><div style="font-family:var(--M);font-weight:700;color:${cashflowNet(b)>=0?"var(--gn)":"var(--rd)"}">${cashflowNet(b)>=0?"+":""}${fmt(cashflowNet(b))} €</div></div>
+        <div style="padding:6px;background:var(--s2);border-radius:6px"><div style="color:var(--t3)">Rdt brut</div><div style="font-family:var(--M);font-weight:700">${rdtBrut(b).toFixed(2)}%</div></div>
+        <div style="padding:6px;background:var(--s2);border-radius:6px"><div style="color:var(--t3)">Rdt net</div><div style="font-family:var(--M);font-weight:700">${rdtNet(b).toFixed(2)}%</div></div>
+        ${b.credit_restant>0?`<div style="padding:6px;background:var(--s2);border-radius:6px;grid-column:span 2"><div style="color:var(--t3)">Crédit restant</div><div style="font-family:var(--M);font-weight:700;color:var(--rd)">−${fmt(b.credit_restant)} € · ${fmt(b.mensualite)} €/mois</div></div>`:''}
+      </div>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px;color:var(--rd);border-color:rgba(248,113,113,0.3)" onclick="deleteBien('${b.id}')">Supprimer</button>
+    </div>`).join('');
+}
+
+function renderImmoRendement(){
+  const kpis=document.getElementById('immo-rdt-kpis');
+  if(!biens.length){if(kpis)kpis.innerHTML=`<div class="no-data">Aucun bien</div>`;return;}
+  const totalLoyers=biens.reduce((s,b)=>s+b.loyer*12,0);
+  const totalCharges=biens.reduce((s,b)=>s+b.charges*12+(b.taxe_fonciere||0),0);
+  const totalMens=biens.reduce((s,b)=>s+b.mensualite*12,0);
+  const cfAnnuel=biens.reduce((s,b)=>s+cashflowNet(b)*12,0);
+  if(kpis)kpis.innerHTML=`
+    <div class="kpi kpi-am"><div class="kpi-lbl">Loyers annuels</div><div class="kpi-val am">+${fmt(totalLoyers)} €</div><div class="kpi-sub">bruts</div></div>
+    <div class="kpi kpi-rd"><div class="kpi-lbl">Charges annuelles</div><div class="kpi-val rd">−${fmt(totalCharges)} €</div><div class="kpi-sub">hors crédit</div></div>
+    <div class="kpi kpi-rd"><div class="kpi-lbl">Mensualités crédit</div><div class="kpi-val rd">−${fmt(totalMens)} €</div><div class="kpi-sub">/an</div></div>
+    <div class="kpi kpi-${cfAnnuel>=0?"gn":"rd"}"><div class="kpi-lbl">Cashflow net/an</div><div class="kpi-val ${cfAnnuel>=0?"gn":"rd"}">${cfAnnuel>=0?"+":""}${fmt(cfAnnuel)} €</div></div>`;
+  const bars=document.getElementById('immo-rdt-bars');
+  if(bars){const data=biens.map(b=>({n:b.nom,p:rdtBrut(b)}));renderBars('immo-rdt-bars',data,data[0]?.p||10);}
+  const cf=document.getElementById('immo-cashflow-detail');
+  if(cf)cf.innerHTML=biens.map(b=>{const c=cashflowNet(b);return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid var(--b);font-size:11px"><span><strong>${b.nom}</strong> — Loyer ${fmt(b.loyer)}€ − Mensualité ${fmt(b.mensualite)}€ − Charges ${fmt(b.charges+((b.taxe_fonciere||0)/12))}€</span><span style="font-family:var(--M);font-weight:700;color:${c>=0?"var(--gn)":"var(--rd)"}">${c>=0?"+":""}${fmt(c)} €/mois</span></div>`;}).join('');
+}
+
+function renderImmoCredits(){
+  const k=document.getElementById('immo-credits-kpis');const t=document.getElementById('immo-credits-table');
+  const withCredit=biens.filter(b=>b.credit_restant>0);
+  const totalRestant=withCredit.reduce((s,b)=>s+b.credit_restant,0);
+  const totalMens=withCredit.reduce((s,b)=>s+b.mensualite,0);
+  if(k)k.innerHTML=`<div class="kpi kpi-rd"><div class="kpi-lbl">Capital restant total</div><div class="kpi-val rd">−${fmt(totalRestant)} €</div></div><div class="kpi kpi-rd"><div class="kpi-lbl">Mensualités totales</div><div class="kpi-val rd">−${fmt(totalMens)} €/mois</div></div><div class="kpi kpi-am"><div class="kpi-lbl">Nombre de prêts</div><div class="kpi-val am">${withCredit.length}</div></div><div class="kpi kpi-bl"><div class="kpi-lbl">Taux moyen</div><div class="kpi-val bl">${withCredit.length?((withCredit.reduce((s,b)=>s+b.taux,0)/withCredit.length).toFixed(2)):'—'}%</div></div>`;
+  if(t)t.innerHTML=withCredit.length?withCredit.map(b=>{const now=new Date(),end=b.fin_credit?new Date(b.fin_credit):null;const moisRest=end?Math.max(0,Math.round((end-now)/(1000*86400*30))):null;return`<tr><td>${b.nom}</td><td style="font-family:var(--M);color:var(--rd)">−${fmt(b.credit_restant)} €</td><td style="font-family:var(--M)">${fmt(b.mensualite)} €/mois</td><td style="font-family:var(--M)">${b.taux}%</td><td style="font-size:10px">${b.fin_credit||'—'}</td><td style="font-size:10px;color:var(--t3)">${moisRest!==null?moisRest+' mois restants':'—'}</td></tr>`;}).join(''):`<tr><td colspan="6" class="no-data">Aucun crédit enregistré</td></tr>`;
+}
+
+const REGIME_DESC={
+  micro:`<strong>Micro-foncier</strong> — Abattement forfaitaire de 30% sur les loyers. Applicable si loyers &lt; 15 000 €/an. Simple, mais moins avantageux si charges réelles &gt; 30%.`,
+  reel:`<strong>Régime réel</strong> — Déduction des charges réelles (intérêts d'emprunt, travaux, charges de copro, assurance, gestion). Idéal si charges &gt; 30% des loyers.`,
+  lmnp:`<strong>LMNP (Loueur Meublé Non Professionnel)</strong> — Amortissement du bien possible. BIC micro : abattement 50%. Régime réel : amortissement + déduction charges = souvent 0 impôt pendant 10-15 ans.`,
+  lmp:`<strong>LMP (Loueur Meublé Professionnel)</strong> — Loyers &gt; 23 000 €/an et représentent +50% des revenus. Déficits imputables sur revenu global. Exonération IFI sous conditions.`,
+  sci:`<strong>SCI à l'IS</strong> — Société civile immobilière soumise à l'impôt sur les sociétés (15% jusqu'à 42 500 € de bénéfice). Amortissement possible. Complexité administrative importante.`,
+};
+function setRegime(r,btn){
+  immoRegime=r;
+  document.querySelectorAll('#regime-btns .chip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderImmoFiscalite();
+}
+function renderImmoFiscalite(){
+  const rd=document.getElementById('regime-desc');if(rd)rd.innerHTML=REGIME_DESC[immoRegime]||'';
+  const totalLoyers=biens.reduce((s,b)=>s+b.loyer*12,0);
+  const totalCharges=biens.reduce((s,b)=>s+b.charges*12+(b.taxe_fonciere||0),0);
+  const totalInterets=biens.reduce((s,b)=>s+b.credit_restant*(b.taux/100)*0.6,0); // approx
+  const detail=document.getElementById('immo-fisc-detail');
+  if(!detail)return;
+  if(!biens.length){detail.innerHTML=`<div class="no-data">Ajoutez des biens pour voir l'estimation fiscale</div>`;return;}
+  let baseImposable=0,impot=0,desc='';
+  if(immoRegime==='micro'){
+    baseImposable=totalLoyers*0.70;
+    impot=baseImposable*0.30+baseImposable*0.172;
+    desc=`Loyers : ${fmt(totalLoyers)} € → Abattement 30% → Base : ${fmt(baseImposable)} € → PFU 30% + PS 17.2%`;
+  } else if(immoRegime==='reel'){
+    baseImposable=Math.max(0,totalLoyers-totalCharges-totalInterets);
+    impot=baseImposable*0.30+baseImposable*0.172;
+    desc=`Loyers : ${fmt(totalLoyers)} € − Charges : ${fmt(totalCharges)} € − Intérêts est. : ${fmt(totalInterets)} € = Base : ${fmt(baseImposable)} €`;
+  } else if(immoRegime==='lmnp'){
+    const amort=biens.reduce((s,b)=>s+b.prix_achat*0.03,0);
+    baseImposable=Math.max(0,totalLoyers-totalCharges-amort);
+    impot=baseImposable*0.30;
+    desc=`Loyers : ${fmt(totalLoyers)} € − Charges : ${fmt(totalCharges)} € − Amortissements est. : ${fmt(amort)} €/an = Base : ${fmt(baseImposable)} €`;
+  } else if(immoRegime==='sci'){
+    baseImposable=Math.max(0,totalLoyers-totalCharges);
+    impot=Math.min(baseImposable,42500)*0.15+Math.max(0,baseImposable-42500)*0.25;
+    desc=`Bénéfice : ${fmt(baseImposable)} € → IS 15% jusqu'à 42 500 € puis 25%`;
+  } else {
+    baseImposable=Math.max(0,totalLoyers-totalCharges-totalInterets);
+    impot=baseImposable*0.30+baseImposable*0.172;
+    desc=`Régime LMP — Base estimée : ${fmt(baseImposable)} €`;
+  }
+  detail.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      <div style="font-size:10px;color:var(--t3);line-height:1.6">${desc}</div>
+      <div class="tax-row"><span>Loyers bruts annuels</span><span style="color:var(--gn)">+${fmt(totalLoyers)} €</span></div>
+      <div class="tax-row"><span>Base imposable estimée</span><span style="font-family:var(--M)">${fmt(baseImposable)} €</span></div>
+      <div class="tax-total"><span>Impôts estimés</span><span style="color:var(--rd)">−${fmt(impot)} €/an</span></div>
+      <div class="tax-row"><span>Revenu net après impôts</span><span style="color:var(--gn);font-weight:700">+${fmt(totalLoyers-impot)} €/an</span></div>
+    </div>`;
+}
+
+// ── SIMULATEUR ────────────────────────────────────────────────────────────────
+function calcSimuImmo(){
+  const prix=parseFloat(document.getElementById('sim-prix')?.value)||0;
+  const apport=parseFloat(document.getElementById('sim-apport')?.value)||0;
+  const loyer=parseFloat(document.getElementById('sim-loyer')?.value)||0;
+  const taux=parseFloat(document.getElementById('sim-taux')?.value)||0;
+  const duree=parseFloat(document.getElementById('sim-duree')?.value)||20;
+  const charges=parseFloat(document.getElementById('sim-charges')?.value)||0;
+  const tf=parseFloat(document.getElementById('sim-tf')?.value)||0;
+  const out=document.getElementById('sim-output');
+  if(!prix||!out) return;
+  const emprunt=prix-apport;
+  const tauxM=taux/100/12;
+  const n=duree*12;
+  const mensualite=tauxM>0?emprunt*(tauxM*Math.pow(1+tauxM,n))/(Math.pow(1+tauxM,n)-1):emprunt/n;
+  const coutCredit=mensualite*n-emprunt;
+  const cfBrut=loyer-mensualite;
+  const cfNet=loyer-mensualite-charges-tf/12;
+  const rdtB=prix>0?(loyer*12)/prix*100:0;
+  const rdtN=prix>0?((loyer-charges)*12-tf)/prix*100:0;
+  const rdtFonds=apport>0?cfNet*12/apport*100:0;
+  const autofinancement=cfNet>=0;
+  out.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div class="tax-row"><span>Emprunt</span><span style="font-family:var(--M)">${fmt(emprunt)} €</span></div>
+      <div class="tax-row"><span>Mensualité crédit</span><span style="font-family:var(--M);color:var(--rd)">−${fmt(mensualite)} €/mois</span></div>
+      <div class="tax-row"><span>Coût total crédit</span><span style="font-family:var(--M);color:var(--rd)">−${fmt(coutCredit)} €</span></div>
+      <div class="tax-row"><span>Cashflow brut</span><span style="font-family:var(--M);color:${cfBrut>=0?"var(--gn)":"var(--rd)"}">${cfBrut>=0?"+":""}${fmt(cfBrut)} €/mois</span></div>
+      <div class="tax-total"><span>Cashflow net (all-in)</span><span style="color:${cfNet>=0?"var(--gn)":"var(--rd);"}font-family:var(--M);font-weight:700">${cfNet>=0?"+":""}${fmt(cfNet)} €/mois</span></div>
+      <div class="tax-row"><span>Rendement brut</span><span style="font-family:var(--M)">${rdtB.toFixed(2)}%</span></div>
+      <div class="tax-row"><span>Rendement net</span><span style="font-family:var(--M)">${rdtN.toFixed(2)}%</span></div>
+      <div class="tax-row"><span>Rendement sur fonds propres</span><span style="font-family:var(--M);color:#f97316;font-weight:700">${rdtFonds.toFixed(2)}%</span></div>
+      <div style="padding:10px;border-radius:8px;background:${autofinancement?"rgba(16,185,129,0.08)":"rgba(248,113,113,0.08)"};border:1px solid ${autofinancement?"rgba(16,185,129,0.2)":"rgba(248,113,113,0.2)"};font-size:11px;text-align:center;margin-top:4px">
+        ${autofinancement?"✅ <strong>S'autofinance</strong> — le loyer couvre toutes les charges":"⚠️ <strong>Effort mensuel</strong> de "+fmt(Math.abs(cfNet))+" € — à votre charge"}
+      </div>
+    </div>`;
+}
+
+
 // ═══════════════════════════════════════════════════════
 let importBroker = 'auto';
 let importRows = [];
