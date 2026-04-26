@@ -1812,6 +1812,7 @@ const QUESTS = [
   {id:"q_all_lessons",  icon:"🎓", title:"Diplômé CAPITAL",      desc:"Termine toutes les leçons d'éducation financière",            xp:250, cat:"Avancé",      check:()=>doneLessons.size>=LESSONS.length},
 ];
 
+let xp=0, doneLessons=new Set();
 let completedQuests = new Set();
 
 async function loadQuests(){
