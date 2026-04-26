@@ -2409,7 +2409,13 @@ async function renderOverview(){
     } else {box.innerHTML="";}
   }
   renderKPIs();renderObjective();renderDonut();
-  await drawHist("hist-canvas",90,106);
+  // Mini graphique overview — charge les snapshots et passe le tableau
+  dbAll("snapshots").then(all=>{
+    const snaps=all.filter(s=>String(s.portfolio_id)===String(currentPF)).sort((a,b)=>a.date.localeCompare(b.date));
+    const cutoff=new Date();cutoff.setDate(cutoff.getDate()-90);
+    const data=snaps.filter(s=>new Date(s.date)>=cutoff);
+    drawHist("hist-canvas",data,106);
+  });
   renderBars("ov-geo",getZones().slice(0,7),getZones()[0]?.p);
   renderBars("ov-sec",consolidate(getSect).slice(0,7),consolidate(getSect)[0]?.p);
   renderOvAlerts();renderOvPos();
@@ -2489,16 +2495,17 @@ function renderDonut(){
   const t=document.createElementNS("http://www.w3.org/2000/svg","text");t.setAttribute("x",cx);t.setAttribute("y",cy+3);t.setAttribute("text-anchor","middle");t.setAttribute("fill","#9090a8");t.setAttribute("font-size","8");t.setAttribute("font-family","Inter,sans-serif");t.textContent=data.length+" actifs";svg.appendChild(t);
   leg.innerHTML=data.map((x,i)=>`<div class="dl-row"><div class="dl-dot" style="background:${CLRS[i%CLRS.length]}"></div><span class="dl-name">${x.n}</span><span class="dl-pct">${x.p.toFixed(1)}%</span></div>`).join("");
 }
-async function drawHist(canvasId, data){
+async function drawHist(canvasId, data, miniHeight){
   const canvas=document.getElementById(canvasId); if(!canvas)return;
-  const tooltip=document.getElementById("hist-tooltip");
-  const hoverVal=document.getElementById("hist-hover-val");
-  const hoverDate=document.getElementById("hist-hover-date");
-  const xLabels=document.getElementById("hist-x-labels");
+  const isMini = !!miniHeight;
+  const tooltip=isMini?null:document.getElementById("hist-tooltip");
+  const hoverVal=isMini?null:document.getElementById("hist-hover-val");
+  const hoverDate=isMini?null:document.getElementById("hist-hover-date");
+  const xLabels=isMini?null:document.getElementById("hist-x-labels");
 
   const dpr=window.devicePixelRatio||1;
-  const W=canvas.parentElement.offsetWidth||600;
-  const H=220;
+  const W=canvas.parentElement?.offsetWidth||canvas.offsetWidth||600;
+  const H=miniHeight||220;
   canvas.width=W*dpr; canvas.height=H*dpr;
   canvas.style.width=W+"px"; canvas.style.height=H+"px";
   const ctx=canvas.getContext("2d"); ctx.scale(dpr,dpr);
@@ -2558,8 +2565,8 @@ async function drawHist(canvasId, data){
   if(hoverVal) hoverVal.textContent=fmt(vals[vals.length-1])+" €";
   if(hoverDate) hoverDate.textContent=data[data.length-1].date;
 
-  // Labels axe X
-  if(xLabels){
+  // Labels axe X (seulement sur le grand graphique)
+  if(!isMini && xLabels){
     const count=Math.min(5,data.length);
     const step=Math.floor((data.length-1)/(count-1));
     xLabels.innerHTML="";
@@ -2575,7 +2582,8 @@ async function drawHist(canvasId, data){
     }
   }
 
-  // Tooltip interactif
+  // Tooltip interactif (seulement sur le grand graphique)
+  if(!isMini){
   canvas.onmousemove=function(e){
     const rect=canvas.getBoundingClientRect();
     const mx=e.clientX-rect.left;
@@ -2616,6 +2624,7 @@ async function drawHist(canvasId, data){
     if(hoverVal)hoverVal.textContent=fmt(vals[vals.length-1])+" €";
     if(hoverDate)hoverDate.textContent=data[data.length-1].date;
   };
+  } // end if(!isMini)
 }
 function renderOvAlerts(){
   const zones=getZones(),sects=consolidate(getSect);
