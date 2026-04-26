@@ -365,6 +365,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
 .chip{font-family:var(--M);font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--b);color:var(--t3);cursor:pointer;}
 .chip:hover{border-color:var(--pu);color:var(--pu2);}
 .chip.on{background:var(--pu3);border-color:rgba(124,58,237,0.35);color:var(--pu2);}
+.broker-btn{background:var(--s2);border:1px solid var(--b2);border-radius:8px;padding:10px 6px;cursor:pointer;color:var(--tx);transition:all 0.15s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;}.broker-btn:hover{border-color:var(--pu2);background:rgba(124,58,237,0.08);}.broker-btn.active{border-color:var(--pu2);background:rgba(124,58,237,0.12);}
 .tax-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:8px 10px;background:var(--s2);border-radius:6px;}.tax-row em{color:var(--t3);font-style:normal;font-family:var(--M);}.tax-row .tr{font-family:var(--M);color:var(--rd);font-weight:600;}.tax-total{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;padding:10px;background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.15);border-radius:6px;margin-top:4px;}
 
 .res{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;background:var(--s2);cursor:pointer;border:1px solid var(--b);transition:all 0.12s;}
@@ -1067,6 +1068,7 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
           <button class="btn btn-outline btn-sm" onclick="createPF()">+</button>
         </div>
         <button class="btn btn-outline btn-sm" onclick="exportData()" style="width:100%">📤 Exporter JSON</button>
+        <button class="btn btn-primary btn-sm" onclick="openImport()" style="width:100%">📥 Importer CSV</button>
         <button class="btn btn-outline btn-sm" onclick="resetOnboarding()" style="width:100%">↺ Refaire l'onboarding</button>
         <button class="btn-del btn-sm" onclick="resetAll()" style="width:100%;border-radius:6px;padding:6px">🗑 Réinitialiser tout</button>
       </div>
@@ -1087,8 +1089,113 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
   </div>
 </div>
 
-<!-- MODALS -->
-<div class="overlay" id="search-overlay">
+<!-- IMPORT CSV MODAL -->
+<div class="overlay" id="import-overlay">
+  <div class="modal" style="max-width:700px;max-height:90vh">
+    <div class="mhead">
+      <h3>📥 Importer un CSV</h3>
+      <button class="mx" onclick="closeImport()">✕</button>
+    </div>
+    <div class="mbody" style="overflow-y:auto;max-height:calc(90vh - 60px)">
+
+      <!-- Étape 1 : Choix plateforme + upload -->
+      <div id="import-step1">
+        <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Sélectionne ta plateforme — le format est détecté automatiquement</div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px" id="broker-btns">
+          <button class="broker-btn active" data-broker="auto" onclick="selectBroker('auto',this)">
+            <div style="font-size:18px">🔍</div>
+            <div style="font-size:10px;font-weight:700">Auto-détect</div>
+            <div style="font-size:8px;color:var(--t3)">Universel</div>
+          </button>
+          <button class="broker-btn" data-broker="traderepublic" onclick="selectBroker('traderepublic',this)">
+            <div style="font-size:18px">🟢</div>
+            <div style="font-size:10px;font-weight:700">Trade Republic</div>
+            <div style="font-size:8px;color:var(--t3)">Export activité</div>
+          </button>
+          <button class="broker-btn" data-broker="degiro" onclick="selectBroker('degiro',this)">
+            <div style="font-size:18px">🔵</div>
+            <div style="font-size:10px;font-weight:700">Degiro</div>
+            <div style="font-size:8px;color:var(--t3)">Relevé transactions</div>
+          </button>
+          <button class="broker-btn" data-broker="boursorama" onclick="selectBroker('boursorama',this)">
+            <div style="font-size:18px">🟡</div>
+            <div style="font-size:10px;font-weight:700">Boursorama</div>
+            <div style="font-size:8px;color:var(--t3)">Export mouvements</div>
+          </button>
+          <button class="broker-btn" data-broker="binance" onclick="selectBroker('binance',this)">
+            <div style="font-size:18px">🟠</div>
+            <div style="font-size:10px;font-weight:700">Binance</div>
+            <div style="font-size:8px;color:var(--t3)">Trade history</div>
+          </button>
+          <button class="broker-btn" data-broker="coinbase" onclick="selectBroker('coinbase',this)">
+            <div style="font-size:18px">🔷</div>
+            <div style="font-size:10px;font-weight:700">Coinbase</div>
+            <div style="font-size:8px;color:var(--t3)">Transaction report</div>
+          </button>
+          <button class="broker-btn" data-broker="bourse_direct" onclick="selectBroker('bourse_direct',this)">
+            <div style="font-size:18px">🔴</div>
+            <div style="font-size:10px;font-weight:700">Bourse Direct</div>
+            <div style="font-size:8px;color:var(--t3)">Historique ordres</div>
+          </button>
+          <button class="broker-btn" data-broker="fortuneo" onclick="selectBroker('fortuneo',this)">
+            <div style="font-size:18px">🟣</div>
+            <div style="font-size:10px;font-weight:700">Fortuneo</div>
+            <div style="font-size:8px;color:var(--t3)">Export titres</div>
+          </button>
+          <button class="broker-btn" data-broker="interactive" onclick="selectBroker('interactive',this)">
+            <div style="font-size:18px">⚫</div>
+            <div style="font-size:10px;font-weight:700">IBKR</div>
+            <div style="font-size:8px;color:var(--t3)">Interactive Brokers</div>
+          </button>
+        </div>
+
+        <!-- Format attendu -->
+        <div id="import-format-hint" style="background:var(--s2);border-radius:8px;padding:10px 12px;font-size:10px;color:var(--t3);margin-bottom:14px;line-height:1.7"></div>
+
+        <!-- Drop zone -->
+        <div id="import-dropzone" style="border:2px dashed var(--b2);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all 0.2s"
+          onclick="document.getElementById('csv-file-input').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--pu2)'"
+          ondragleave="this.style.borderColor='var(--b2)'"
+          ondrop="handleFileDrop(event)">
+          <div style="font-size:28px;margin-bottom:8px">📂</div>
+          <div style="font-size:12px;font-weight:600">Glisse ton fichier ici ou clique</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:4px">Fichiers .csv, .txt acceptés</div>
+          <input type="file" id="csv-file-input" accept=".csv,.txt" style="display:none" onchange="handleFileSelect(this)">
+        </div>
+      </div>
+
+      <!-- Étape 2 : Preview -->
+      <div id="import-step2" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+          <button class="btn btn-ghost btn-sm" onclick="resetImport()">← Retour</button>
+          <div id="import-summary" style="font-size:11px;color:var(--t2)"></div>
+        </div>
+
+        <!-- Erreurs de parsing -->
+        <div id="import-errors" style="display:none;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px;padding:10px 12px;font-size:10px;color:var(--rd);margin-bottom:12px"></div>
+
+        <!-- Table preview -->
+        <div class="scroll" style="max-height:320px;margin-bottom:14px">
+          <table class="tbl" id="import-preview-table">
+            <thead><tr><th>✓</th><th>Ticker</th><th>Nom</th><th>Valeur €</th><th>Investi €</th><th>Qté</th><th>Px moy.</th><th>Source</th></tr></thead>
+            <tbody id="import-preview-body"></tbody>
+          </table>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:10px;color:var(--t3)" id="import-count-label"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="toggleSelectAll()">Tout sélect.</button>
+            <button class="btn btn-primary" onclick="confirmImport()" id="import-confirm-btn">✓ Importer les positions</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
   <div class="modal">
     <div class="mhead"><h3>Ajouter un actif</h3><button class="mx" onclick="closeSearch()">✕</button></div>
     <div class="mbody">
@@ -3805,6 +3912,203 @@ function calcImpots(){
 
 
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// IMPORT CSV
+// ═══════════════════════════════════════════════════════
+let importBroker = 'auto';
+let importRows = [];
+
+const BROKER_HINTS = {
+  auto:         "Format détecté automatiquement. Colonnes recommandées : Ticker/ISIN, Nom, Valeur, Quantité, Prix moyen, Date.",
+  traderepublic:"Exporter depuis : Compte → Activité → Exporter (CSV). Colonnes : Date, ISIN, Nom, Qté, Prix, Total.",
+  degiro:       "Exporter depuis : Compte → Relevé de compte. Colonnes : Date, Produit, Symbole/ISIN, Qté, Prix, Valeur.",
+  boursorama:   "Exporter depuis : Mon compte → Mes titres → Exporter. Colonnes : Code, Libellé, Qté, PMP, Valeur.",
+  binance:      "Télécharger depuis : Portefeuille → Transactions → Exporter. Colonnes : Date, Pair, Side, Price, Executed.",
+  coinbase:     "Télécharger depuis : Assets → Rapports → Générer CSV. Colonnes : Timestamp, Transaction Type, Asset, Quantity.",
+  bourse_direct:"Exporter depuis : Mon portefeuille → Exporter CSV. Colonnes : Code, Libellé, Qté, PMPA, Valeur.",
+  fortuneo:     "Exporter depuis : Comptes → Titres → Exporter CSV. Colonnes : Valeur, Qté, Cours, Valorisation.",
+  interactive:  "Exporter depuis : Reports → Flex Query → Positions. Colonnes : Symbol, Description, Quantity, MarkPrice, PositionValue.",
+};
+
+function openImport(){
+  document.getElementById('import-overlay').classList.add('open');
+  resetImport();
+  document.getElementById('import-format-hint').textContent=BROKER_HINTS.auto;
+}
+function closeImport(){ document.getElementById('import-overlay').classList.remove('open'); }
+function resetImport(){
+  document.getElementById('import-step1').style.display='block';
+  document.getElementById('import-step2').style.display='none';
+  const fi=document.getElementById('csv-file-input'); if(fi) fi.value='';
+  importRows=[];
+}
+function selectBroker(broker, btn){
+  importBroker=broker;
+  document.querySelectorAll('.broker-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('import-format-hint').textContent=BROKER_HINTS[broker]||BROKER_HINTS.auto;
+}
+function handleFileDrop(e){
+  e.preventDefault();
+  document.getElementById('import-dropzone').style.borderColor='var(--b2)';
+  const file=e.dataTransfer.files[0];
+  if(file) parseCSVFile(file);
+}
+function handleFileSelect(input){
+  const file=input.files[0];
+  if(file) parseCSVFile(file);
+}
+function parseCSVFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{ try{ parseCSV(e.target.result); }catch(err){ showToast('Erreur : '+err.message,'error'); } };
+  reader.readAsText(file,'UTF-8');
+}
+function detectSep(text){ const l=text.split('\n')[0]; const c={',':0,';':0,'\t':0}; for(const x of l)if(c[x]!==undefined)c[x]++; return Object.entries(c).sort((a,b)=>b[1]-a[1])[0][0]; }
+function detectBrokerAuto(headers){
+  const h=headers.map(x=>x.toLowerCase());
+  if(h.some(x=>x.includes('isin'))&&h.some(x=>x.includes('shares'))) return 'traderepublic';
+  if(h.some(x=>x.includes('product'))&&h.some(x=>x.includes('exchange'))) return 'degiro';
+  if(h.some(x=>x.includes('pair'))&&h.some(x=>x.includes('side'))) return 'binance';
+  if(h.some(x=>x.includes('asset'))&&h.some(x=>x.includes('transaction'))) return 'coinbase';
+  if(h.some(x=>x.includes('pmpa')||x.includes('pmp'))) return 'boursorama';
+  if(h.some(x=>x.includes('markprice')||x.includes('positionvalue'))) return 'interactive';
+  return 'generic';
+}
+function parseCSV(text){
+  const sep=detectSep(text);
+  const lines=text.trim().split('\n').filter(l=>l.trim());
+  if(lines.length<2){showToast('Fichier trop court','error');return;}
+  const headers=lines[0].split(sep).map(h=>h.replace(/["']/g,'').trim());
+  const broker=importBroker==='auto'?detectBrokerAuto(headers):importBroker;
+  const rows=lines.slice(1).map(l=>{const v=l.split(sep).map(x=>x.replace(/["']/g,'').trim());const o={};headers.forEach((h,i)=>o[h]=v[i]||'');return o;});
+  let parsed=[];
+  if(broker==='traderepublic') parsed=parseTR(rows,headers);
+  else if(broker==='degiro') parsed=parseDegiro(rows,headers);
+  else if(broker==='binance') parsed=parseBinance(rows,headers);
+  else if(broker==='coinbase') parsed=parseCoinbase(rows,headers);
+  else if(broker==='boursorama'||broker==='bourse_direct'||broker==='fortuneo') parsed=parseGeneric(rows,headers);
+  else if(broker==='interactive') parsed=parseIBKR(rows,headers);
+  else parsed=parseGeneric(rows,headers);
+  // Dédoublonner
+  const byT={};
+  parsed.filter(p=>p&&p.ticker).forEach(p=>{if(!byT[p.ticker]||p.value>byT[p.ticker].value)byT[p.ticker]=p;});
+  importRows=Object.values(byT);
+  showImportPreview(importRows,broker);
+}
+function _col(headers,patterns){return headers.find(h=>patterns.some(p=>new RegExp(p,'i').test(h)));}
+function _num(v){return parseFloat((v||'0').replace(/\s/g,'').replace(/,/g,'.').replace(/[^0-9.-]/g,''))||0;}
+
+function parseTR(rows,headers){
+  const isinC=_col(headers,['isin']);const nameC=_col(headers,['name','nom','titel']);
+  const qtyC=_col(headers,['shares','qty','quantity','anzahl']);const priceC=_col(headers,['price','kurs','cours']);
+  const totalC=_col(headers,['amount','total','betrag']);const typeC=_col(headers,['type','side','status']);
+  const pos={};
+  rows.forEach(r=>{
+    const isin=(r[isinC]||'').trim();if(!isin)return;
+    const isBuy=!typeC||/buy|kauf|achat|order/i.test(r[typeC]||'');
+    const qty=_num(r[qtyC]);const total=Math.abs(_num(r[totalC]))||qty*_num(r[priceC]);
+    if(!pos[isin])pos[isin]={isin,name:r[nameC]||isin,qty:0,inv:0};
+    if(isBuy){pos[isin].qty+=qty;pos[isin].inv+=total;}else{pos[isin].qty-=qty;pos[isin].inv-=total;}
+  });
+  return Object.values(pos).filter(p=>p.qty>0.001).map(p=>{
+    const t=DB.find(d=>d.isin===p.isin)?.t||p.isin.slice(-6);
+    return{ticker:t,isin:p.isin,name:p.name,shares:p.qty,avgPrice:p.qty>0?p.inv/p.qty:0,invested:p.inv,value:p.qty*(p.inv/p.qty||0),source:'Trade Republic'};
+  });
+}
+function parseDegiro(rows,headers){
+  const productC=_col(headers,['product','nom','name']);const isinC=_col(headers,['isin','symbol']);
+  const qtyC=_col(headers,['quantity','qté','qty']);const priceC=_col(headers,['price','cours','prix']);
+  const valueC=_col(headers,['value','valeur','local']);
+  const pos={};
+  rows.forEach(r=>{
+    const key=(r[isinC]||r[productC]||'').trim();if(!key)return;
+    const qty=_num(r[qtyC]);const price=_num(r[priceC]);const value=_num(r[valueC]);
+    if(!pos[key])pos[key]={key,name:r[productC]||key,qty:0,inv:0};
+    if(qty>0){pos[key].qty+=qty;pos[key].inv+=Math.abs(value)||qty*price;}
+    else if(qty<0){pos[key].qty+=qty;}
+  });
+  return Object.values(pos).filter(p=>p.qty>0.001).map(p=>{
+    const t=DB.find(d=>d.isin===p.key)?.t||p.key.slice(0,8);
+    return{ticker:t,isin:p.key,name:p.name,shares:p.qty,avgPrice:p.qty>0?p.inv/p.qty:0,invested:p.inv,value:p.qty*(p.inv/p.qty||0),source:'Degiro'};
+  });
+}
+function parseBinance(rows,headers){
+  const pairC=_col(headers,['pair','symbol','market']);const sideC=_col(headers,['side','type']);
+  const execC=_col(headers,['executed','filled','qty']);const totalC=_col(headers,['total','amount','cost']);
+  const pos={};
+  rows.forEach(r=>{
+    const execStr=(r[execC]||'').trim();const asset=execStr.replace(/[0-9. ]/g,'')||'';if(!asset)return;
+    const qty=_num(execStr);const total=_num(r[totalC]);const isBuy=/buy/i.test(r[sideC]||'');
+    if(!pos[asset])pos[asset]={asset,qty:0,inv:0};
+    if(isBuy){pos[asset].qty+=qty;pos[asset].inv+=total;}else{pos[asset].qty-=qty;}
+  });
+  return Object.values(pos).filter(p=>p.qty>0.00001).map(p=>({ticker:p.asset,name:p.asset,shares:p.qty,avgPrice:p.qty>0?p.inv/p.qty:0,invested:p.inv,value:p.qty*(p.inv/p.qty||0),source:'Binance',isCrypto:true}));
+}
+function parseCoinbase(rows,headers){
+  const assetC=_col(headers,['asset','currency']);const typeC=_col(headers,['type','transaction']);
+  const qtyC=_col(headers,['quantity','amount']);const totalC=_col(headers,['total','subtotal','eur','usd']);
+  const pos={};
+  rows.forEach(r=>{
+    const asset=(r[assetC]||'').trim();if(!asset||/EUR|USD|GBP/.test(asset))return;
+    const qty=_num(r[qtyC]);const total=Math.abs(_num(r[totalC]));const type=(r[typeC]||'').toLowerCase();
+    if(!pos[asset])pos[asset]={asset,qty:0,inv:0};
+    if(/buy|receive|reward/i.test(type)){pos[asset].qty+=qty;pos[asset].inv+=total;}
+    else if(/sell|send/i.test(type)){pos[asset].qty-=qty;}
+  });
+  return Object.values(pos).filter(p=>p.qty>0.00001).map(p=>({ticker:p.asset,name:p.asset,shares:p.qty,avgPrice:p.qty>0?p.inv/p.qty:0,invested:p.inv,value:p.qty*(p.inv/p.qty||0),source:'Coinbase',isCrypto:true}));
+}
+function parseIBKR(rows,headers){
+  const symC=_col(headers,['symbol','ticker']);const descC=_col(headers,['description','name']);
+  const qtyC=_col(headers,['quantity','pos']);const priceC=_col(headers,['markprice','price','cours']);
+  const valueC=_col(headers,['positionvalue','value','valeur']);const costC=_col(headers,['cost','basis','invested']);
+  return rows.filter(r=>r[symC]).map(r=>{
+    const qty=Math.abs(_num(r[qtyC]));const price=_num(r[priceC]);const value=Math.abs(_num(r[valueC]))||qty*price;const cost=Math.abs(_num(r[costC]))||value;
+    return{ticker:(r[symC]||'').trim(),name:r[descC]||r[symC]||'',shares:qty,avgPrice:qty>0?cost/qty:price,invested:cost,value,source:'IBKR'};
+  }).filter(p=>p.shares>0);
+}
+function parseGeneric(rows,headers){
+  const tC=_col(headers,['ticker','code','symbol','isin','valeur','titre']);const nC=_col(headers,['name','nom','libellé','description']);
+  const qC=_col(headers,['qty','quantité','quantity','qté','shares','nombre']);const pmpC=_col(headers,['pmp','pmpa','prix moyen','avg','average','cours moyen']);
+  const vC=_col(headers,['valeur','value','valorisation','total','montant']);const pC=_col(headers,['cours','price','prix','last','dernier']);
+  return rows.filter(r=>r[tC]||r[nC]).map(r=>{
+    const ticker=((r[tC]||r[nC]||'').replace(/\s/g,'').slice(0,10)||'UNK').toUpperCase();
+    const qty=_num(r[qC])||1;const pmp=_num(r[pmpC]);const price=_num(r[pC])||pmp;
+    const value=_num(r[vC])||qty*price;
+    return{ticker,name:r[nC]||r[tC]||ticker,shares:qty,avgPrice:pmp||price,invested:qty*(pmp||price),value:Math.abs(value)||qty*price,source:'CSV'};
+  }).filter(p=>p.shares>0&&p.value>0);
+}
+
+function showImportPreview(rows,broker){
+  document.getElementById('import-step1').style.display='none';
+  document.getElementById('import-step2').style.display='block';
+  const sum=document.getElementById('import-summary');
+  if(sum)sum.innerHTML=`<strong>${rows.length} position(s)</strong> détectée(s) · format <strong>${broker}</strong>`;
+  const tbody=document.getElementById('import-preview-body');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="8" class="no-data">Aucune position détectée</td></tr>`;return;}
+  tbody.innerHTML=rows.map((r,i)=>{
+    const db=DB.find(d=>d.t===r.ticker);const name=db?.n||r.name||r.ticker;const val=r.value>0?r.value:r.invested;
+    return`<tr><td><input type="checkbox" class="import-check" data-idx="${i}" checked></td><td><span class="badge b-amber">${r.ticker}</span></td><td style="font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</td><td style="font-family:var(--M);font-size:10px">${fmt(val)} €</td><td style="font-family:var(--M);font-size:10px;color:var(--t3)">${fmt(r.invested||val)} €</td><td style="font-family:var(--M);font-size:10px">${r.shares>0?r.shares.toFixed(4):'—'}</td><td style="font-family:var(--M);font-size:10px">${r.avgPrice>0?fmt(r.avgPrice)+' €':'—'}</td><td><span class="badge b-neu" style="font-size:8px">${r.source||'CSV'}</span></td></tr>`;
+  }).join('');
+  const cl=document.getElementById('import-count-label');if(cl)cl.textContent=`${rows.length} position(s) — décochez celles à ignorer`;
+}
+function toggleSelectAll(){const c=document.querySelectorAll('.import-check');const all=[...c].every(x=>x.checked);c.forEach(x=>x.checked=!all);}
+async function confirmImport(){
+  const checks=document.querySelectorAll('.import-check');
+  const sel=importRows.filter((_,i)=>checks[i]?.checked);
+  if(!sel.length){showToast('Aucune position sélectionnée','error');return;}
+  const btn=document.getElementById('import-confirm-btn');btn.textContent='⏳…';btn.disabled=true;
+  let ok=0,skip=0;
+  for(const r of sel){
+    if(positions.find(p=>p.ticker===r.ticker)){skip++;continue;}
+    const v=r.value>0?r.value:r.invested;const inv=r.invested>0?r.invested:v;
+    try{await dbPut('positions',{portfolio_id:String(currentPF),ticker:r.ticker,name:r.name||r.ticker,current_value:v,invested:inv,shares:r.shares||0,avg_price:r.avgPrice||0,date_added:new Date().toISOString().split('T')[0]});ok++;}catch(e){skip++;}
+  }
+  await loadPositions();await renderOverview();renderFullPos();await takeDailySnapshot();
+  addXP(ok*15,'Import CSV 📥');checkQuests();closeImport();
+  showToast(`✓ ${ok} importée(s)${skip?`, ${skip} ignorée(s)`:''}`);
+  btn.textContent='✓ Importer les positions';btn.disabled=false;
+}
+
 async function renderSettings(){
   document.getElementById("s-pos").textContent=positions.length;
   document.getElementById("s-val").textContent=fmt(totV())+" €";
