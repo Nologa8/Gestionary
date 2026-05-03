@@ -374,7 +374,60 @@ body{background:var(--bg);color:var(--tx);font-family:var(--S);min-height:100vh;
    THÈME IMMOBILIER — ORANGE & BLANC
    Zéro bleu. Zéro violet. Point.
 ════════════════════════════════════ */
-body.immo-mode *{--pu:rgb(249,115,22);--pu2:#f97316;--bl:#f97316;--am:#f97316;--acc:#ea580c;--acc2:#f97316;}
+body.immo-mode{background:#fff !important;color:#1a1a1a !important;}
+body.immo-mode *{--pu:rgb(249,115,22);--pu2:#f97316;--bl:#f97316;--am:#f97316;--acc:#ea580c;--acc2:#f97316;--tx:#1a1a1a;--t2:#374151;--t3:#6b7280;--s1:#f9fafb;--s2:#f3f4f6;--b:#e5e7eb;--b2:#d1d5db;}
+body.immo-mode .topnav{background:#fff !important;border-bottom:2px solid rgba(249,115,22,0.3) !important;box-shadow:0 2px 12px rgba(0,0,0,0.06) !important;}
+body.immo-mode .nav-brand{background:linear-gradient(135deg,#ea580c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+body.immo-mode .nav-tab{color:#6b7280 !important;}
+body.immo-mode #immo-nav-tabs .nav-tab.active{color:#ea580c !important;border-bottom:2px solid #f97316 !important;font-weight:700;}
+body.immo-mode #immo-nav-tabs .nav-tab:hover{color:#ea580c !important;}
+body.immo-mode .card{background:#fff !important;border:1px solid #e5e7eb !important;box-shadow:0 1px 4px rgba(0,0,0,0.06) !important;}
+body.immo-mode .card:hover{border-color:rgba(249,115,22,0.3) !important;box-shadow:0 4px 16px rgba(249,115,22,0.1) !important;}
+body.immo-mode .wrap{background:#f9fafb !important;}
+body.immo-mode .btn-primary,body.immo-mode button.btn-primary{background:linear-gradient(135deg,#ea580c,#f97316) !important;color:#fff !important;box-shadow:0 2px 8px rgba(234,88,12,0.3) !important;}
+body.immo-mode .btn-outline{border-color:#f97316 !important;color:#ea580c !important;background:transparent !important;}
+body.immo-mode .btn-ghost{color:#374151 !important;background:rgba(0,0,0,0.04) !important;}
+body.immo-mode .chip{background:#f3f4f6 !important;border-color:#d1d5db !important;color:#374151 !important;}
+body.immo-mode .chip.on,body.immo-mode .chip:hover{background:rgba(249,115,22,0.1) !important;border-color:rgba(249,115,22,0.4) !important;color:#ea580c !important;}
+body.immo-mode .sh-title{color:#ea580c !important;}
+body.immo-mode .sh-sub{color:#6b7280 !important;}
+body.immo-mode .ct{color:#374151 !important;border-bottom-color:#e5e7eb !important;}
+body.immo-mode .kpi{background:#f9fafb !important;border:1px solid #e5e7eb !important;}
+body.immo-mode .kpi-lbl{color:#6b7280 !important;}
+body.immo-mode .kpi-sub{color:#9ca3af !important;}
+body.immo-mode .kpi-am .kpi-val{color:#f97316 !important;}
+body.immo-mode .kpi-am{background:rgba(249,115,22,0.06) !important;border-color:rgba(249,115,22,0.2) !important;}
+body.immo-mode .kpi-gn .kpi-val{color:#059669 !important;}
+body.immo-mode .kpi-rd .kpi-val{color:#dc2626 !important;}
+body.immo-mode .tbl th{background:#f3f4f6 !important;color:#6b7280 !important;border-bottom-color:#e5e7eb !important;}
+body.immo-mode .tbl td{border-bottom-color:#f3f4f6 !important;color:#374151 !important;}
+body.immo-mode .tbl tr:hover td{background:#fef9f5 !important;}
+body.immo-mode .badge.b-pos{background:rgba(249,115,22,0.1) !important;color:#ea580c !important;border-color:rgba(249,115,22,0.3) !important;}
+body.immo-mode .badge.b-neu{background:#f3f4f6 !important;color:#6b7280 !important;border-color:#d1d5db !important;}
+body.immo-mode .badge.b-neg{background:rgba(220,38,38,0.08) !important;color:#dc2626 !important;border-color:rgba(220,38,38,0.2) !important;}
+body.immo-mode .inp{background:#fff !important;border-color:#d1d5db !important;color:#1a1a1a !important;}
+body.immo-mode .inp:focus{border-color:#f97316 !important;box-shadow:0 0 0 3px rgba(249,115,22,0.15) !important;}
+body.immo-mode select.inp{background:#fff !important;}
+body.immo-mode .modal{background:#fff !important;border-color:#e5e7eb !important;}
+body.immo-mode .mhead{background:#fff !important;border-bottom-color:#f3f4f6 !important;}
+body.immo-mode .mhead h3{color:#1a1a1a !important;}
+body.immo-mode .mx{color:#6b7280 !important;}
+body.immo-mode .tax-row{background:#f9fafb !important;}
+body.immo-mode .tax-total{background:rgba(249,115,22,0.06) !important;border-color:rgba(249,115,22,0.2) !important;}
+body.immo-mode .xp-fill{background:linear-gradient(90deg,#ea580c,#f97316) !important;}
+body.immo-mode .nav-xp{border-color:rgba(249,115,22,0.3) !important;background:rgba(249,115,22,0.06) !important;}
+body.immo-mode .nav-xp-name{color:#ea580c !important;}
+body.immo-mode .nav-xp-pts{color:#6b7280 !important;}
+body.immo-mode .price-bar{background:#fff !important;border-bottom-color:rgba(249,115,22,0.15) !important;}
+body.immo-mode .no-data{color:#9ca3af !important;}
+body.immo-mode #app{display:none !important;}
+body.immo-mode .mode-btn{color:#6b7280 !important;}
+body.immo-mode .mode-btn.active:not(#mode-immo){background:#f3f4f6 !important;color:#374151 !important;}
+body.immo-mode .nav-user-menu{background:#fff !important;border-color:#e5e7eb !important;box-shadow:0 8px 24px rgba(0,0,0,0.1) !important;}
+body.immo-mode .num-item{color:#374151 !important;}
+body.immo-mode .num-item:hover{background:#fef9f5 !important;color:#ea580c !important;}
+body.immo-mode .nav-pf{background:#f3f4f6 !important;border-color:#d1d5db !important;color:#374151 !important;}
+
 body.immo-mode .nav-brand{background:linear-gradient(135deg,#ea580c,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 body.immo-mode .topnav{border-bottom-color:rgba(249,115,22,0.3);}
 body.immo-mode #immo-nav-tabs .nav-tab{color:rgba(255,255,255,0.45);border-bottom:2px solid transparent;}
